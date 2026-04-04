@@ -1,0 +1,25 @@
+[workspace]
+members = [
+    "crates/bindings",
+    "crates/compiler",
+    "crates/resolve",
+]
+default-members = ["crates/resolve"]
+resolver = "2"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+
+[profile.release-python]
+inherits = "release"
+panic = "unwind"
+
+[workspace.lints.rust]
+warnings = "deny"
+
+[workspace.lints.clippy]
+all = "deny"

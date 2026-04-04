@@ -1,0 +1,15 @@
+[package]
+name = "bindings"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "resolve"
+crate-type = ["cdylib"]
+
+[dependencies]
+resolve = { path = "../resolve" }
+pyo3 = { version = "0.28.3", features = ["extension-module"] }
+
+[lints]
+workspace = true

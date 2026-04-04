@@ -1,0 +1,20 @@
+[build-system]
+requires = ["maturin==1.12.6"]
+build-backend = "maturin"
+
+[project]
+name = "django-resolve"
+version = "0.1.0"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Framework :: Django",
+]
+
+[dependency-groups]
+dev = ["maturin==1.12.6"]
+
+[tool.maturin]
+manifest-path = "Cargo.toml"
+features = ["pyo3/extension-module"]
