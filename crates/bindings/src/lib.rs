@@ -89,6 +89,7 @@ fn make_reporter(verbose: bool) -> Reporter {
 }
 
 #[pyfunction]
+#[allow(clippy::too_many_arguments)]
 #[pyo3(signature = (
     template_directories,
     output_directory,
@@ -128,6 +129,7 @@ fn compile_all(
 }
 
 #[pyfunction]
+#[allow(clippy::too_many_arguments)]
 #[pyo3(signature = (
     template_directories,
     output_directory,
