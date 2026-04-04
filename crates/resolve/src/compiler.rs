@@ -6,7 +6,6 @@ use std::time::{Instant, SystemTime, UNIX_EPOCH};
 use anyhow::Result;
 use rustc_hash::FxHashSet;
 
-use compiler::resolver::ResolveLimits;
 use crate::cache::CompileCache;
 use crate::config::Config;
 use crate::discovery::{DependencyGraph, TemplateDiscovery, TemplateIndex};
@@ -14,11 +13,14 @@ use crate::loader::{FsTemplateLoader, VendorIndex};
 use crate::reporter::Reporter;
 use crate::swap;
 use crate::validator::Validator;
-
+use compiler::resolver::ResolveLimits;
 
 const COMPILE_TEMPLATES_MAX: u32 = 100_000;
 const COPY_TEMPLATES_MAX: u32 = 100_000;
 const DEPENDENCY_WALK_MAX: u32 = 500_000;
+
+type ExecuteResult = (u32, u32, Vec<(String, String)>, u32);
+type BatchResult = (Vec<(String, bool)>, Vec<(String, String)>);
 
 pub struct Compiler<'a> {
     config: &'a Config,
@@ -44,22 +46,15 @@ impl<'a> Compiler<'a> {
         let remaining = index.templates.len() - entries.len();
 
         self.reporter.info("Scan");
-        self.reporter.info(&format!(
-            "  {} templates found",
-            index.templates.len(),
-        ));
+        self.reporter
+            .info(&format!("  {} templates found", index.templates.len(),));
         self.reporter.info(&format!(
             "  {} entry, {} non-compiled\n",
             entries.len(),
             remaining,
         ));
 
-        let (to_compile, mut cache) = self.plan(
-            &index,
-            &entries,
-            &graph,
-            output,
-        )?;
+        let (to_compile, mut cache) = self.plan(&index, &entries, &graph, output)?;
 
         if to_compile.is_empty() {
             self.reporter.info("All templates are up to date.");
@@ -67,13 +62,7 @@ impl<'a> Compiler<'a> {
         }
 
         let (compiled, failed, failures, copied) =
-            self.execute(
-                &to_compile,
-                &index,
-                &vendor,
-                output,
-                &mut cache,
-            )?;
+            self.execute(&to_compile, &index, &vendor, output, &mut cache)?;
 
         if !failures.is_empty() {
             self.reporter.info(&format!(
@@ -118,10 +107,8 @@ impl<'a> Compiler<'a> {
 
         let cache = CompileCache::new(self.config)?;
 
-        let missing = !output.exists()
-            || output
-                .read_dir()
-                .map_or(true, |mut d| d.next().is_none());
+        let missing =
+            !output.exists() || output.read_dir().map_or(true, |mut d| d.next().is_none());
 
         let to_compile = if missing {
             entries.to_vec()
@@ -129,8 +116,7 @@ impl<'a> Compiler<'a> {
             self.find_stale(&cache, index, entries, graph)
         };
 
-        let count = u32::try_from(to_compile.len())
-            .expect("to_compile length must fit in u32");
+        let count = u32::try_from(to_compile.len()).expect("to_compile length must fit in u32");
 
         assert!(
             count <= COMPILE_TEMPLATES_MAX,
@@ -147,7 +133,7 @@ impl<'a> Compiler<'a> {
         vendor: &VendorIndex,
         output: &Path,
         cache: &mut CompileCache,
-    ) -> Result<(u32, u32, Vec<(String, String)>, u32)> {
+    ) -> Result<ExecuteResult> {
         assert!(
             !to_compile.is_empty(),
             "to_compile must not be empty in execute",
@@ -161,37 +147,21 @@ impl<'a> Compiler<'a> {
 
         fs::create_dir_all(&staging)?;
 
-        self.reporter.info(&format!(
-            "Compile ({} templates)",
-            to_compile.len(),
-        ));
+        self.reporter
+            .info(&format!("Compile ({} templates)", to_compile.len(),));
 
-        let (results, failures) = self.compile_batch(
-            to_compile,
-            index,
-            vendor,
-            &staging,
-            cache,
-        )?;
+        let (results, failures) = self.compile_batch(to_compile, index, vendor, &staging, cache)?;
 
         assert!(
             results.len() == to_compile.len(),
             "results length must match to_compile length",
         );
 
-        let compiled = u32::try_from(
-            results
-                .iter()
-                .filter(|(_, success)| *success)
-                .count()
-        ).expect("compiled count must fit in u32");
+        let compiled = u32::try_from(results.iter().filter(|(_, success)| *success).count())
+            .expect("compiled count must fit in u32");
 
-        let failed = u32::try_from(
-            results
-                .iter()
-                .filter(|(_, success)| !*success)
-                .count()
-        ).expect("failed count must fit in u32");
+        let failed = u32::try_from(results.iter().filter(|(_, success)| !*success).count())
+            .expect("failed count must fit in u32");
 
         let names: FxHashSet<&str> = results
             .iter()
@@ -207,23 +177,13 @@ impl<'a> Compiler<'a> {
             .count();
 
         if remaining > 0 {
-            self.reporter.info(&format!(
-                "\nCopy ({} templates)",
-                remaining,
-            ));
+            self.reporter
+                .info(&format!("\nCopy ({} templates)", remaining,));
         }
 
-        let copied = self.copy_remaining(
-            index,
-            &staging,
-            &results,
-        )?;
+        let copied = self.copy_remaining(index, &staging, &results)?;
 
-        swap::swap_staging_to_output(
-            &staging,
-            output,
-            self.reporter,
-        )?;
+        swap::swap_staging_to_output(&staging, output, self.reporter)?;
 
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -237,10 +197,7 @@ impl<'a> Compiler<'a> {
     }
 
     pub fn compile_single(&self, name: &str) -> Result<()> {
-        assert!(
-            !name.is_empty(),
-            "template_name must not be empty",
-        );
+        assert!(!name.is_empty(), "template_name must not be empty",);
 
         let discovery = TemplateDiscovery::new(self.config);
         let index = discovery.scan()?;
@@ -255,9 +212,7 @@ impl<'a> Compiler<'a> {
         let path = index
             .templates
             .get(&normalized)
-            .ok_or_else(|| {
-                anyhow::anyhow!("Template not found: {}", normalized)
-            })?;
+            .ok_or_else(|| anyhow::anyhow!("Template not found: {}", normalized))?;
 
         let vendor = VendorIndex::build(self.config.vendor_path());
         let output = self.config.output_path();
@@ -266,13 +221,7 @@ impl<'a> Compiler<'a> {
 
         self.reporter.info(&format!("Compiling {}...", normalized));
 
-        self.compile_template(
-            &normalized,
-            path,
-            &index,
-            &vendor,
-            output,
-        )?;
+        self.compile_template(&normalized, path, &index, &vendor, output)?;
 
         self.reporter.info(&format!("Compiled: {}", normalized));
 
@@ -288,12 +237,7 @@ impl<'a> Compiler<'a> {
 
         let mut validator = Validator::new();
 
-        let result = validator.validate(
-            &index,
-            &vendor,
-            &entries,
-            self.reporter,
-        )?;
+        let result = validator.validate(&index, &vendor, &entries, self.reporter)?;
 
         if result.error_count > 0 {
             return Err(anyhow::anyhow!("Validation failed"));
@@ -314,17 +258,14 @@ impl<'a> Compiler<'a> {
         let graph = discovery.dependencies(&index)?;
         let entries = discovery.entries(&index, &graph);
 
-        self.reporter.info(&format!(
-            "  {} templates found",
-            index.templates.len(),
-        ));
+        self.reporter
+            .info(&format!("  {} templates found", index.templates.len(),));
 
-        self.reporter.info(&format!(
-            "  {} entry templates",
-            entries.len(),
-        ));
+        self.reporter
+            .info(&format!("  {} entry templates", entries.len(),));
 
-        self.reporter.info("\nEntry templates that would be compiled:");
+        self.reporter
+            .info("\nEntry templates that would be compiled:");
 
         for entry in &entries {
             self.reporter.info(&format!("  {}", entry));
@@ -339,20 +280,15 @@ impl<'a> Compiler<'a> {
             "vendor_directory must not be empty for sync_vendor",
         );
 
-        let manager =
-            crate::vendor::VendorManager::new(self.config, self.reporter);
+        let manager = crate::vendor::VendorManager::new(self.config, self.reporter);
 
-        if !manager.vendor_exists()
-            || manager.is_vendor_stale()?
-        {
+        if !manager.vendor_exists() || manager.is_vendor_stale()? {
             self.reporter.info("Vendor");
 
             let count = manager.sync()?;
 
-            self.reporter.info(&format!(
-                "  {} templates synced\n",
-                count,
-            ));
+            self.reporter
+                .info(&format!("  {} templates synced\n", count,));
 
             assert!(
                 self.config.vendor_path().exists() || count == 0,
@@ -368,9 +304,7 @@ impl<'a> Compiler<'a> {
         Ok(0)
     }
 
-    fn discover(
-        &self,
-    ) -> Result<(TemplateIndex, Vec<String>, DependencyGraph)> {
+    fn discover(&self) -> Result<(TemplateIndex, Vec<String>, DependencyGraph)> {
         assert!(
             !self.config.paths.primary_templates.is_empty(),
             "primary_templates must not be empty for discovery",
@@ -381,8 +315,7 @@ impl<'a> Compiler<'a> {
         let graph = discovery.dependencies(&index)?;
         let entries = discovery.entries(&index, &graph);
 
-        let count = u32::try_from(entries.len())
-            .expect("entry_templates length must fit in u32");
+        let count = u32::try_from(entries.len()).expect("entry_templates length must fit in u32");
 
         assert!(
             count <= COMPILE_TEMPLATES_MAX,
@@ -401,8 +334,7 @@ impl<'a> Compiler<'a> {
         entries: &[String],
         graph: &DependencyGraph,
     ) -> Vec<String> {
-        let count = u32::try_from(entries.len())
-            .expect("entry_templates length must fit in u32");
+        let count = u32::try_from(entries.len()).expect("entry_templates length must fit in u32");
 
         assert!(
             count <= COMPILE_TEMPLATES_MAX,
@@ -421,19 +353,14 @@ impl<'a> Compiler<'a> {
                 COMPILE_TEMPLATES_MAX,
             );
 
-            if let Some(path) = index.templates.get(entry) {
-                if cache.needs_recompile(entry, path) {
-                    to_compile.push(entry.clone());
-                    continue;
-                }
+            if let Some(path) = index.templates.get(entry)
+                && cache.needs_recompile(entry, path)
+            {
+                to_compile.push(entry.clone());
+                continue;
             }
 
-            if Self::has_stale(
-                entry,
-                cache,
-                index,
-                graph,
-            ) {
+            if Self::has_stale(entry, cache, index, graph) {
                 to_compile.push(entry.clone());
             }
         }
@@ -471,10 +398,10 @@ impl<'a> Compiler<'a> {
 
             if let Some(deps) = graph.dependencies.get(current) {
                 for dep in deps {
-                    if let Some(path) = index.templates.get(&dep.target) {
-                        if cache.needs_recompile(&dep.target, path) {
-                            return true;
-                        }
+                    if let Some(path) = index.templates.get(&dep.target)
+                        && cache.needs_recompile(&dep.target, path)
+                    {
+                        return true;
                     }
 
                     stack.push(&dep.target);
@@ -492,9 +419,8 @@ impl<'a> Compiler<'a> {
         vendor: &VendorIndex,
         output: &Path,
         cache: &mut CompileCache,
-    ) -> Result<(Vec<(String, bool)>, Vec<(String, String)>)> {
-        let count = u32::try_from(to_compile.len())
-            .expect("to_compile length must fit in u32");
+    ) -> Result<BatchResult> {
+        let count = u32::try_from(to_compile.len()).expect("to_compile length must fit in u32");
 
         assert!(
             count <= COMPILE_TEMPLATES_MAX,
@@ -525,10 +451,7 @@ impl<'a> Compiler<'a> {
                 None => {
                     let message = "Template not found in index".to_string();
                     self.reporter.info(&format!("  {}", name));
-                    self.reporter.error(&format!(
-                        "    ERROR {}",
-                        message,
-                    ));
+                    self.reporter.error(&format!("    ERROR {}", message,));
                     failures.push((name.clone(), message));
                     results.push((name.clone(), false));
                     continue;
@@ -537,32 +460,18 @@ impl<'a> Compiler<'a> {
 
             self.reporter.info(&format!("  {}", name));
 
-            match self.compile_template(
-                name,
-                path,
-                index,
-                vendor,
-                output,
-            ) {
+            match self.compile_template(name, path, index, vendor, output) {
                 Ok(()) => {
-                    if let Err(error) = cache.mark_compiled(
-                        name,
-                        path,
-                    ) {
-                        self.reporter.warn(&format!(
-                            "    WARN Failed to cache: {}",
-                            error,
-                        ));
+                    if let Err(error) = cache.mark_compiled(name, path) {
+                        self.reporter
+                            .warn(&format!("    WARN Failed to cache: {}", error,));
                     }
 
                     results.push((name.clone(), true));
                 }
                 Err(error) => {
                     let message = error.to_string();
-                    self.reporter.error(&format!(
-                        "    ERROR {}",
-                        message,
-                    ));
+                    self.reporter.error(&format!("    ERROR {}", message,));
                     failures.push((name.clone(), message));
                     results.push((name.clone(), false));
                 }
@@ -585,22 +494,11 @@ impl<'a> Compiler<'a> {
         vendor: &VendorIndex,
         output: &Path,
     ) -> Result<()> {
-        assert!(
-            !name.is_empty(),
-            "template_name must not be empty",
-        );
+        assert!(!name.is_empty(), "template_name must not be empty",);
 
-        assert!(
-            path.is_file(),
-            "template_path must be a file: {:?}",
-            path,
-        );
+        assert!(path.is_file(), "template_path must be a file: {:?}", path,);
 
-        assert!(
-            output.exists(),
-            "output directory must exist: {:?}",
-            output,
-        );
+        assert!(output.exists(), "output directory must exist: {:?}", output,);
 
         let content = fs::read_to_string(path)?;
         let loader = FsTemplateLoader::new(index, vendor);
@@ -618,11 +516,8 @@ impl<'a> Compiler<'a> {
                 compiler::error::Severity::Warning => "WARN",
             };
 
-            self.reporter.warn(&format!(
-                "    {} {}",
-                label,
-                diagnostic.message,
-            ));
+            self.reporter
+                .warn(&format!("    {} {}", label, diagnostic.message,));
         }
 
         let resolved = compiler::resolver::inheritance::resolve(
@@ -633,12 +528,7 @@ impl<'a> Compiler<'a> {
             &limits,
         )?;
 
-        let resolved = compiler::resolver::inclusion::resolve(
-            resolved,
-            name,
-            &loader,
-            &limits,
-        )?;
+        let resolved = compiler::resolver::inclusion::resolve(resolved, name, &loader, &limits)?;
 
         let html = compiler::codegen::generate(&resolved);
 
@@ -667,8 +557,7 @@ impl<'a> Compiler<'a> {
         output: &Path,
         compiled: &[(String, bool)],
     ) -> Result<u32> {
-        let count = u32::try_from(index.templates.len())
-            .expect("template count must fit in u32");
+        let count = u32::try_from(index.templates.len()).expect("template count must fit in u32");
 
         assert!(
             count <= COPY_TEMPLATES_MAX,

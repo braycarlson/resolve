@@ -10,7 +10,6 @@ use sha2::{Digest, Sha256};
 
 use crate::config::Config;
 
-
 const FILE_READ_ITERATIONS_MAX: u32 = 2_000_000;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -108,21 +107,10 @@ impl CompileCache {
         manifest
     }
 
-    pub fn needs_recompile(
-        &self,
-        name: &str,
-        path: &Path,
-    ) -> bool {
-        assert!(
-            !name.is_empty(),
-            "template_name must not be empty",
-        );
+    pub fn needs_recompile(&self, name: &str, path: &Path) -> bool {
+        assert!(!name.is_empty(), "template_name must not be empty",);
 
-        assert!(
-            path.is_file(),
-            "template_path must be a file: {:?}",
-            path,
-        );
+        assert!(path.is_file(), "template_path must be a file: {:?}", path,);
 
         let Some(cached) = self.manifest.files.get(name) else {
             return true;
@@ -132,29 +120,17 @@ impl CompileCache {
             return true;
         };
 
-        cached.hash != current.hash
-            || cached.size != current.size
+        cached.hash != current.hash || cached.size != current.size
     }
 
-    pub fn mark_compiled(
-        &mut self,
-        name: &str,
-        path: &Path,
-    ) -> Result<()> {
-        assert!(
-            !name.is_empty(),
-            "template_name must not be empty",
-        );
+    pub fn mark_compiled(&mut self, name: &str, path: &Path) -> Result<()> {
+        assert!(!name.is_empty(), "template_name must not be empty",);
 
         let entry = Self::entry(path)?;
 
-        self.manifest
-            .files
-            .insert(name.to_string(), entry);
+        self.manifest.files.insert(name.to_string(), entry);
 
-        self.manifest
-            .resolve_templates
-            .insert(name.to_string());
+        self.manifest.resolve_templates.insert(name.to_string());
 
         assert!(
             self.manifest.files.contains_key(name),
@@ -165,11 +141,7 @@ impl CompileCache {
     }
 
     fn entry(path: &Path) -> Result<FileEntry> {
-        assert!(
-            path.is_file(),
-            "entry path must be a file: {:?}",
-            path,
-        );
+        assert!(path.is_file(), "entry path must be a file: {:?}", path,);
 
         let mut file = fs::File::open(path)?;
         let metadata = file.metadata()?;
@@ -203,8 +175,7 @@ impl CompileCache {
         for byte in digest.iter() {
             use std::fmt::Write;
 
-            write!(hash, "{:02x}", byte)
-                .expect("hex formatting must not fail");
+            write!(hash, "{:02x}", byte).expect("hex formatting must not fail");
         }
 
         let modified = metadata

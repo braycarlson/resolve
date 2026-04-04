@@ -1,14 +1,20 @@
 use compiler::lexer::{Lexer, Token};
 
-
 #[test]
 fn test_matrix_lexer_variable_add_str_chain() {
     let mut lexer = Lexer::new("{{ person.first_name|add_str:' '|add_str:person.last_name }}");
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
-        Token::Variable { expression, filters, raw } => {
-            assert_eq!(*expression, "person.first_name|add_str:' '|add_str:person.last_name");
+        Token::Variable {
+            expression,
+            filters,
+            raw,
+        } => {
+            assert_eq!(
+                *expression,
+                "person.first_name|add_str:' '|add_str:person.last_name"
+            );
             assert_eq!(filters.len(), 2);
             assert_eq!(filters[0].name, "add_str");
             assert_eq!(filters[0].arguments, vec!["' '"]);
@@ -170,14 +176,17 @@ fn test_matrix_lexer_custom_tag_string_to_font_scale() {
 
 #[test]
 fn test_matrix_lexer_alpine_with_fake_django_data() {
-    let template = r#"<div x-data="{ selected: '{{ selected_key|default:"summary" }}', open: false }"></div>"#;
+    let template =
+        r#"<div x-data="{ selected: '{{ selected_key|default:"summary" }}', open: false }"></div>"#;
     let mut lexer = Lexer::new(template);
     let tokens = lexer.tokenize().unwrap();
 
     assert!(!tokens.is_empty());
-    assert!(tokens
-        .iter()
-        .any(|token| matches!(token, Token::Text(text) if text.contains("x-data"))));
+    assert!(
+        tokens
+            .iter()
+            .any(|token| matches!(token, Token::Text(text) if text.contains("x-data")))
+    );
 }
 
 #[test]
@@ -193,9 +202,11 @@ fn test_matrix_lexer_alpine_complex_fetch_and_url() {
     let tokens = lexer.tokenize().unwrap();
 
     assert!(!tokens.is_empty());
-    assert!(tokens
-        .iter()
-        .any(|token| matches!(token, Token::Text(text) if text.contains("fetch("))));
+    assert!(
+        tokens
+            .iter()
+            .any(|token| matches!(token, Token::Text(text) if text.contains("fetch(")))
+    );
 }
 
 #[test]
@@ -220,7 +231,11 @@ fn test_matrix_lexer_variable_literal_string_prefix() {
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
-        Token::Variable { expression, filters, .. } => {
+        Token::Variable {
+            expression,
+            filters,
+            ..
+        } => {
             assert!(expression.contains("\"$\""));
             assert_eq!(filters.len(), 1);
             assert_eq!(filters[0].name, "add");
@@ -232,7 +247,9 @@ fn test_matrix_lexer_variable_literal_string_prefix() {
 
 #[test]
 fn test_matrix_lexer_variable_slice_filter() {
-    let mut lexer = Lexer::new("{{ obj_a.owner.first_name|slice:\":1\"|add_str:obj_a.owner.last_name|slice:\":2\" }}");
+    let mut lexer = Lexer::new(
+        "{{ obj_a.owner.first_name|slice:\":1\"|add_str:obj_a.owner.last_name|slice:\":2\" }}",
+    );
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
@@ -251,7 +268,9 @@ fn test_matrix_lexer_variable_slice_filter() {
 
 #[test]
 fn test_matrix_lexer_for_with_filtered_iterable() {
-    let mut lexer = Lexer::new("{% for assignment in dispatch.assignments|get_item:column %}{{ assignment }}{% endfor %}");
+    let mut lexer = Lexer::new(
+        "{% for assignment in dispatch.assignments|get_item:column %}{{ assignment }}{% endfor %}",
+    );
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
@@ -265,7 +284,8 @@ fn test_matrix_lexer_for_with_filtered_iterable() {
 
 #[test]
 fn test_matrix_lexer_for_tuple_unpacking_with_items() {
-    let mut lexer = Lexer::new("{% for material, load_counts in daily_report_entity.load_summaries.items %}");
+    let mut lexer =
+        Lexer::new("{% for material, load_counts in daily_report_entity.load_summaries.items %}");
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
@@ -395,9 +415,8 @@ fn test_matrix_lexer_with_as_syntax_and_filter_chain() {
 
 #[test]
 fn test_matrix_lexer_with_string_concatenation_chain() {
-    let mut lexer = Lexer::new(
-        "{% with ''|add:total_count|add:' / '|add:error_count as count_display %}",
-    );
+    let mut lexer =
+        Lexer::new("{% with ''|add:total_count|add:' / '|add:error_count as count_display %}");
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
@@ -414,9 +433,8 @@ fn test_matrix_lexer_with_string_concatenation_chain() {
 
 #[test]
 fn test_matrix_lexer_with_addstr_and_cut_chain() {
-    let mut lexer = Lexer::new(
-        "{% with button_id='prefix_'|add:perm_data.app_name|cut:\" \"|lower %}",
-    );
+    let mut lexer =
+        Lexer::new("{% with button_id='prefix_'|add:perm_data.app_name|cut:\" \"|lower %}");
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
@@ -496,9 +514,8 @@ fn test_matrix_lexer_if_with_filter_and_comparison() {
 
 #[test]
 fn test_matrix_lexer_if_with_multiple_or_conditions() {
-    let mut lexer = Lexer::new(
-        "{% if perms.app_e.view_x or perms.app_e.view_y or perms.app_e.view_z %}",
-    );
+    let mut lexer =
+        Lexer::new("{% if perms.app_e.view_x or perms.app_e.view_y or perms.app_e.view_z %}");
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
@@ -642,9 +659,8 @@ fn test_matrix_lexer_session_controller_to_json_with_string_key() {
 
 #[test]
 fn test_matrix_lexer_with_model_filters_binding() {
-    let mut lexer = Lexer::new(
-        "{% with app_label=obj|model_app_label model_name=obj|model_name %}",
-    );
+    let mut lexer =
+        Lexer::new("{% with app_label=obj|model_app_label model_name=obj|model_name %}");
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
@@ -659,9 +675,8 @@ fn test_matrix_lexer_with_model_filters_binding() {
 
 #[test]
 fn test_matrix_lexer_with_dashes_and_spaces_to_underscore() {
-    let mut lexer = Lexer::new(
-        "{% with 'display_'|add:key|dashes_and_spaces_to_underscore as key_display %}",
-    );
+    let mut lexer =
+        Lexer::new("{% with 'display_'|add:key|dashes_and_spaces_to_underscore as key_display %}");
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
@@ -677,9 +692,7 @@ fn test_matrix_lexer_with_dashes_and_spaces_to_underscore() {
 
 #[test]
 fn test_matrix_lexer_with_floatformat_intcomma_chain() {
-    let mut lexer = Lexer::new(
-        "{% with price_display=line_item.price|floatformat:2|intcomma %}",
-    );
+    let mut lexer = Lexer::new("{% with price_display=line_item.price|floatformat:2|intcomma %}");
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {

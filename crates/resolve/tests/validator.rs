@@ -1,6 +1,5 @@
 use resolve::validator::{alpine, filters};
 
-
 #[test]
 fn test_alpine_core_directives() {
     let directives = vec![
@@ -564,7 +563,8 @@ fn test_alpine_chained_modifiers_valid_and_invalid_mixed() {
     let errors = alpine::validate_modifiers(".prevent.nonexistent.stop");
 
     assert_eq!(
-        errors.len(), 1,
+        errors.len(),
+        1,
         "Exactly one error should be reported for the single invalid modifier. Got: {:?}",
         errors,
     );
@@ -582,7 +582,8 @@ fn test_alpine_chained_modifiers_multiple_invalid() {
     let errors = alpine::validate_modifiers(".prevent.bogus.stop.fake.once");
 
     assert_eq!(
-        errors.len(), 2,
+        errors.len(),
+        2,
         "Exactly two errors for 'bogus' and 'fake'. Got: {:?}",
         errors,
     );

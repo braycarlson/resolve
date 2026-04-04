@@ -6,8 +6,7 @@ use tempfile::TempDir;
 
 use compiler::ast::AstNode;
 
-use common::{compile_template, count_nodes_of_type, parse, write_template, NodeType};
-
+use common::{NodeType, compile_template, count_nodes_of_type, parse, write_template};
 
 #[test]
 fn test_integration_deep_inheritance_with_blocks() {
@@ -247,12 +246,7 @@ fn test_integration_compile_performance_is_acceptable() {
 
     for page_num in 0..100 {
         let includes: String = (0..20)
-            .map(|i| {
-                format!(
-                    "{{% include 'comp_{}.html' %}}",
-                    (page_num + i) % 50
-                )
-            })
+            .map(|i| format!("{{% include 'comp_{}.html' %}}", (page_num + i) % 50))
             .collect();
 
         write_template(
@@ -273,12 +267,13 @@ fn test_integration_compile_performance_is_acceptable() {
     let mut total_output_len: usize = 0;
 
     for page_num in 0..100 {
-        let output = compile_template(
-            &temp_dir,
-            &format!("pages/page_{}.html", page_num),
-        );
+        let output = compile_template(&temp_dir, &format!("pages/page_{}.html", page_num));
 
-        assert!(!output.is_empty(), "page_{}.html should produce output", page_num);
+        assert!(
+            !output.is_empty(),
+            "page_{}.html should produce output",
+            page_num
+        );
         assert!(
             output.contains("<!DOCTYPE html>"),
             "page_{}.html should contain base content",

@@ -179,10 +179,7 @@ fn test_resolver_block_in_html_attribute() {
 
     let output = compile_template(&temp_dir, "child.html");
 
-    assert!(
-        output.contains("base text-danger")
-            || output.contains("base  text-danger"),
-    );
+    assert!(output.contains("base text-danger") || output.contains("base  text-danger"),);
     assert!(!output.contains("class=\"base \n"), "no newline in class");
 }
 
@@ -250,7 +247,9 @@ fn test_resolver_include_with_vars_preserved() {
     );
 
     assert!(
-        !output.contains("{% include 'button.html' with button_text='Click me' button_href='/fake/path/' %}"),
+        !output.contains(
+            "{% include 'button.html' with button_text='Click me' button_href='/fake/path/' %}"
+        ),
         "Include tag should not remain verbatim after successful inclusion. Got: {}",
         output
     );
@@ -260,17 +259,9 @@ fn test_resolver_include_with_vars_preserved() {
 fn test_resolver_include_without_vars_inlined() {
     let temp_dir = TempDir::new().unwrap();
 
-    write_template(
-        &temp_dir,
-        "badge.html",
-        r#"<span>Static Badge</span>"#,
-    );
+    write_template(&temp_dir, "badge.html", r#"<span>Static Badge</span>"#);
 
-    write_template(
-        &temp_dir,
-        "page.html",
-        r#"{% include 'badge.html' %}"#,
-    );
+    write_template(&temp_dir, "page.html", r#"{% include 'badge.html' %}"#);
 
     let output = compile_template(&temp_dir, "page.html");
 
@@ -565,9 +556,7 @@ fn test_resolver_include_with_filter_expressions() {
 
     let output = compile_template(&temp_dir, "page.html");
 
-    assert!(
-        output.contains("description") || output.contains("linebreaksbr"),
-    );
+    assert!(output.contains("description") || output.contains("linebreaksbr"),);
 }
 
 #[test]
@@ -753,9 +742,7 @@ fn test_resolver_inheritance_chain_truncated_beyond_limit() {
     let config = common::create_test_config(&temp_dir);
     let discovery = resolve::discovery::TemplateDiscovery::new(&config);
     let index = discovery.scan().unwrap();
-    let vendor = VendorIndex::build(
-        temp_dir.path().join("vendor").as_path(),
-    );
+    let vendor = VendorIndex::build(temp_dir.path().join("vendor").as_path());
     let loader = FsTemplateLoader::new(&index, &vendor);
 
     let limits = ResolveLimits {
@@ -947,10 +934,7 @@ fn test_resolver_mutual_includes_a_includes_b_includes_a() {
 
     let result = std::panic::catch_unwind(|| compile_template(&temp_dir, "a.html"));
 
-    assert!(
-        result.is_ok(),
-        "Mutual includes (A->B->A) must not panic",
-    );
+    assert!(result.is_ok(), "Mutual includes (A->B->A) must not panic",);
 
     if let Ok(output) = result {
         assert!(
@@ -1055,9 +1039,7 @@ fn test_resolver_include_chain_fully_resolved_via_recursive_descent() {
     let config = common::create_test_config(&temp_dir);
     let discovery = resolve::discovery::TemplateDiscovery::new(&config);
     let index = discovery.scan().unwrap();
-    let vendor = VendorIndex::build(
-        temp_dir.path().join("vendor").as_path(),
-    );
+    let vendor = VendorIndex::build(temp_dir.path().join("vendor").as_path());
     let loader = FsTemplateLoader::new(&index, &vendor);
 
     let limits = ResolveLimits {
@@ -1069,12 +1051,7 @@ fn test_resolver_include_chain_fully_resolved_via_recursive_descent() {
     let content = fs::read_to_string(&template_path).unwrap();
     let nodes = common::parse(&content).unwrap();
 
-    let result = compiler::resolver::inclusion::resolve(
-        nodes,
-        "level_0.html",
-        &loader,
-        &limits,
-    );
+    let result = compiler::resolver::inclusion::resolve(nodes, "level_0.html", &loader, &limits);
 
     assert!(
         result.is_ok(),
@@ -1142,16 +1119,14 @@ fn test_resolver_multiple_includes_same_template_different_with_vars() {
     assert_eq!(
         span_count, 2,
         "Should produce two badge spans from two includes. Got: {}. Output: {}",
-        span_count,
-        output,
+        span_count, output,
     );
 
     let with_count = output.matches("{% with").count();
     assert_eq!(
         with_count, 2,
         "Each include with with_vars should produce its own with wrapper. Got: {}. Output: {}",
-        with_count,
-        output,
+        with_count, output,
     );
 }
 
@@ -1172,17 +1147,16 @@ fn test_resolver_empty_child_extends_inherits_all_parent_defaults() {
 </html>"#,
     );
 
-    write_template(
-        &temp_dir,
-        "child.html",
-        r#"{% extends 'parent.html' %}"#,
-    );
+    write_template(&temp_dir, "child.html", r#"{% extends 'parent.html' %}"#);
 
     let output = compile_template(&temp_dir, "child.html");
 
     assert!(output.contains("Parent Head"), "head default preserved");
     assert!(output.contains("Parent Nav"), "nav default preserved");
-    assert!(output.contains("Parent Content"), "content default preserved");
+    assert!(
+        output.contains("Parent Content"),
+        "content default preserved"
+    );
     assert!(output.contains("Parent Footer"), "footer default preserved");
     assert!(!output.contains("{% extends"), "extends tag removed");
     assert!(!output.contains("{% block"), "block tags removed");

@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use walkdir::WalkDir;
 
-
 const DEFAULT_OUTPUT_DIRECTORY: &str = "resolve_templates";
 const DEFAULT_CACHE_DIRECTORY: &str = ".resolve_cache";
 const DEFAULT_VENDOR_DIRECTORY: &str = ".resolve_vendor";
@@ -35,9 +34,7 @@ pub enum ConfigError {
     #[error("configuration field '{0}' must contain at least one entry")]
     EmptyList(&'static str),
 
-    #[error(
-        "configuration field '{field}' value {value} is out of range ({min}..={max})"
-    )]
+    #[error("configuration field '{field}' value {value} is out of range ({min}..={max})")]
     OutOfRange {
         field: &'static str,
         value: u32,
@@ -147,10 +144,7 @@ pub struct IncrementalConfig {
 }
 
 pub fn load(path: &str) -> Result<Config> {
-    assert!(
-        !path.is_empty(),
-        "config_path must not be empty",
-    );
+    assert!(!path.is_empty(), "config_path must not be empty",);
 
     let content = fs::read_to_string(path)?;
 
@@ -214,9 +208,7 @@ impl Config {
         Ok(config)
     }
 
-    pub fn from_project_directory(
-        project: &Path,
-    ) -> Result<Self, ConfigError> {
+    pub fn from_project_directory(project: &Path) -> Result<Self, ConfigError> {
         assert!(
             project.is_dir(),
             "project_directory must be a directory: {:?}",
@@ -235,13 +227,7 @@ impl Config {
         let cache = project.join(DEFAULT_CACHE_DIRECTORY);
         let vendor = project.join(DEFAULT_VENDOR_DIRECTORY);
 
-        Self::from_params(
-            directories,
-            output,
-            cache,
-            vendor,
-            environment,
-        )
+        Self::from_params(directories, output, cache, vendor, environment)
     }
 
     pub fn validate(&self) -> Result<(), ConfigError> {
@@ -257,9 +243,7 @@ impl Config {
             return Err(ConfigError::EmptyList("paths.primary_templates"));
         }
 
-        if self.validation.max_include_depth == 0
-            || self.validation.max_include_depth > 128
-        {
+        if self.validation.max_include_depth == 0 || self.validation.max_include_depth > 128 {
             return Err(ConfigError::OutOfRange {
                 field: "validation.max_include_depth",
                 value: self.validation.max_include_depth,
@@ -268,8 +252,7 @@ impl Config {
             });
         }
 
-        if self.validation.max_inheritance_depth == 0
-            || self.validation.max_inheritance_depth > 128
+        if self.validation.max_inheritance_depth == 0 || self.validation.max_inheritance_depth > 128
         {
             return Err(ConfigError::OutOfRange {
                 field: "validation.max_inheritance_depth",
@@ -295,8 +278,7 @@ impl Config {
         );
 
         assert!(
-            self.validation.max_include_depth > 0
-                && self.validation.max_include_depth <= 128,
+            self.validation.max_include_depth > 0 && self.validation.max_include_depth <= 128,
             "max_include_depth must be in range 1..=128 after validation",
         );
 
@@ -323,9 +305,7 @@ impl Config {
 
     pub fn all_directories(&self) -> Vec<PathBuf> {
         let mut directories = Vec::with_capacity(
-            self.paths.primary_templates.len()
-                + self.paths.app_templates.len()
-                + 1,
+            self.paths.primary_templates.len() + self.paths.app_templates.len() + 1,
         );
 
         for directory in &self.paths.primary_templates {
@@ -403,7 +383,8 @@ fn discover_templates(project: &Path) -> Vec<PathBuf> {
             .into_iter()
             .filter_map(|entry| entry.ok())
             .any(|entry| {
-                entry.path()
+                entry
+                    .path()
                     .extension()
                     .is_some_and(|extension| extension == "html")
             });

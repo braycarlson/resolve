@@ -1,7 +1,6 @@
 use compiler::ast::AstNode;
 
-use crate::common::{count_nodes_of_type, parse, NodeType};
-
+use crate::common::{NodeType, count_nodes_of_type, parse};
 
 #[test]
 fn test_matrix_parser_extends_blocks_and_includes() {
@@ -129,7 +128,10 @@ fn test_matrix_parser_tuple_unpacking_and_filters() {
         }
     });
 
-    assert!(variable_with_filters, "Expected filtered variables inside loop body");
+    assert!(
+        variable_with_filters,
+        "Expected filtered variables inside loop body"
+    );
 }
 
 #[test]
@@ -156,13 +158,19 @@ fn test_matrix_parser_with_bindings_and_filter_chains() {
 
     let has_filter_binding = ast.iter().any(|node| {
         if let AstNode::With(with_node) = node {
-            with_node.bindings.iter().any(|binding| binding.value.contains("|"))
+            with_node
+                .bindings
+                .iter()
+                .any(|binding| binding.value.contains("|"))
         } else {
             false
         }
     });
 
-    assert!(has_filter_binding, "Expected filter chain inside with binding");
+    assert!(
+        has_filter_binding,
+        "Expected filter chain inside with binding"
+    );
 }
 
 #[test]
@@ -247,7 +255,10 @@ fn test_matrix_parser_permission_if_with_and_not_filter() {
         }
     });
 
-    assert!(has_complex_condition, "Expected complex permission condition with and not + filter");
+    assert!(
+        has_complex_condition,
+        "Expected complex permission condition with and not + filter"
+    );
     assert!(count_nodes_of_type(&ast, NodeType::Include) >= 1);
 }
 
@@ -270,7 +281,10 @@ fn test_matrix_parser_permission_if_with_multiple_or() {
         }
     });
 
-    assert!(has_multi_or, "Expected if condition with multiple or clauses");
+    assert!(
+        has_multi_or,
+        "Expected if condition with multiple or clauses"
+    );
 }
 
 #[test]
@@ -293,7 +307,10 @@ fn test_matrix_parser_permission_if_complex_and_or_chain() {
         }
     });
 
-    assert!(has_mixed_logic, "Expected if condition with mixed and/or and comparison");
+    assert!(
+        has_mixed_logic,
+        "Expected if condition with mixed and/or and comparison"
+    );
 }
 
 #[test]
@@ -326,7 +343,10 @@ fn test_matrix_parser_status_elif_chain_with_enum_constants() {
         }
     });
 
-    assert!(has_many_elifs, "Expected if with 6+ elif branches for enum comparison");
+    assert!(
+        has_many_elifs,
+        "Expected if with 6+ elif branches for enum comparison"
+    );
     assert!(count_nodes_of_type(&ast, NodeType::Include) >= 7);
 }
 
@@ -358,7 +378,10 @@ fn test_matrix_parser_if_with_emoji_string_comparison() {
         }
     });
 
-    assert!(has_emoji_condition, "Expected if condition with emoji string");
+    assert!(
+        has_emoji_condition,
+        "Expected if condition with emoji string"
+    );
 }
 
 #[test]
@@ -381,7 +404,10 @@ fn test_matrix_parser_if_with_date_filter_comparison() {
         }
     });
 
-    assert!(has_filter_comparison, "Expected if condition with date filter and comparison operator");
+    assert!(
+        has_filter_comparison,
+        "Expected if condition with date filter and comparison operator"
+    );
 }
 
 #[test]
@@ -402,7 +428,10 @@ fn test_matrix_parser_for_with_filtered_iterable() {
         }
     });
 
-    assert!(has_filtered_iterable, "Expected for-loop with filter applied to iterable");
+    assert!(
+        has_filtered_iterable,
+        "Expected for-loop with filter applied to iterable"
+    );
 }
 
 #[test]
@@ -418,13 +447,18 @@ fn test_matrix_parser_for_tuple_unpacking_deep_access() {
     let has_deep_unpacking = ast.iter().any(|node| {
         if let AstNode::For(for_node) = node {
             for_node.variable.contains(",")
-                && for_node.iterable.contains("daily_report_entity.load_summaries.items")
+                && for_node
+                    .iterable
+                    .contains("daily_report_entity.load_summaries.items")
         } else {
             false
         }
     });
 
-    assert!(has_deep_unpacking, "Expected tuple unpacking with deeply nested iterable");
+    assert!(
+        has_deep_unpacking,
+        "Expected tuple unpacking with deeply nested iterable"
+    );
 }
 
 #[test]
@@ -438,7 +472,10 @@ fn test_matrix_parser_with_as_syntax_filter_chain() {
     let ast = parse(template).unwrap();
 
     let has_with = ast.iter().any(|node| matches!(node, AstNode::With(_)));
-    assert!(has_with, "Expected With node for as-syntax with filter chain");
+    assert!(
+        has_with,
+        "Expected With node for as-syntax with filter chain"
+    );
 }
 
 #[test]
@@ -452,7 +489,10 @@ fn test_matrix_parser_with_string_concatenation_as() {
     let ast = parse(template).unwrap();
 
     let has_with = ast.iter().any(|node| matches!(node, AstNode::With(_)));
-    assert!(has_with, "Expected With node for string concatenation pattern");
+    assert!(
+        has_with,
+        "Expected With node for string concatenation pattern"
+    );
 }
 
 #[test]
@@ -468,13 +508,19 @@ fn test_matrix_parser_with_model_filter_bindings() {
     let has_multi_filter_bindings = ast.iter().any(|node| {
         if let AstNode::With(with_node) = node {
             with_node.bindings.len() >= 2
-                && with_node.bindings.iter().all(|binding| binding.value.contains("|"))
+                && with_node
+                    .bindings
+                    .iter()
+                    .all(|binding| binding.value.contains("|"))
         } else {
             false
         }
     });
 
-    assert!(has_multi_filter_bindings, "Expected with block with multiple filter-chain bindings");
+    assert!(
+        has_multi_filter_bindings,
+        "Expected with block with multiple filter-chain bindings"
+    );
 }
 
 #[test]
@@ -497,7 +543,10 @@ fn test_matrix_parser_with_floatformat_intcomma_chain() {
         }
     });
 
-    assert!(has_chained_binding, "Expected with binding with floatformat + intcomma chain");
+    assert!(
+        has_chained_binding,
+        "Expected with binding with floatformat + intcomma chain"
+    );
 }
 
 #[test]
@@ -598,13 +647,19 @@ fn test_matrix_parser_nested_with_inside_for() {
 
     let has_with_inside_for = ast.iter().any(|node| {
         if let AstNode::For(for_node) = node {
-            for_node.body.iter().any(|body_node| matches!(body_node, AstNode::With(_)))
+            for_node
+                .body
+                .iter()
+                .any(|body_node| matches!(body_node, AstNode::With(_)))
         } else {
             false
         }
     });
 
-    assert!(has_with_inside_for, "Expected with block nested inside for-loop");
+    assert!(
+        has_with_inside_for,
+        "Expected with block nested inside for-loop"
+    );
 }
 
 #[test]

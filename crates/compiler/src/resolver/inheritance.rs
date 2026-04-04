@@ -7,7 +7,6 @@ use crate::error::CompileError;
 use crate::parser;
 use crate::resolver::{ResolveLimits, TemplateLoader};
 
-
 const BLOCK_NESTING_DEPTH_MAX: u32 = 32;
 const EXTRACT_ITERATIONS_MAX: u32 = 500_000;
 const REPLACE_NODES_MAX: u32 = 500_000;
@@ -66,10 +65,7 @@ pub fn resolve<L: TemplateLoader>(
     loader: &L,
     limits: &ResolveLimits,
 ) -> Result<Vec<AstNode>, CompileError> {
-    assert!(
-        !template.is_empty(),
-        "template_name must not be empty",
-    );
+    assert!(!template.is_empty(), "template_name must not be empty",);
 
     assert!(
         limits.max_inheritance_depth > 0,
@@ -89,21 +85,16 @@ fn resolve_chain<L: TemplateLoader>(
     let limit = limits.max_inheritance_depth;
 
     let mut visited: FxHashSet<PathBuf> =
-        FxHashSet::with_capacity_and_hasher(
-            limit as usize,
-            Default::default(),
-        );
+        FxHashSet::with_capacity_and_hasher(limit as usize, Default::default());
 
-    let mut chain: Vec<(String, Vec<AstNode>)> =
-        Vec::with_capacity(limit as usize);
+    let mut chain: Vec<(String, Vec<AstNode>)> = Vec::with_capacity(limit as usize);
 
     let mut nodes = ast;
     let mut name = template.to_string();
     let mut path: Option<PathBuf> = resolved;
 
     for _ in 0..=limit {
-        let length = u32::try_from(chain.len())
-            .expect("chain length must fit in u32");
+        let length = u32::try_from(chain.len()).expect("chain length must fit in u32");
 
         if length > limit {
             return Err(error_chain_depth(limit, &name));
@@ -125,15 +116,9 @@ fn resolve_chain<L: TemplateLoader>(
 
                 chain.push((name.clone(), nodes));
 
-                let (resolved, content) = load_parent(
-                    &parent,
-                    path.as_deref(),
-                    loader,
-                )?;
+                let (resolved, content) = load_parent(&parent, path.as_deref(), loader)?;
 
-                nodes = parser::parse(&content)
-                    .map_err(CompileError::from)?
-                    .nodes;
+                nodes = parser::parse(&content).map_err(CompileError::from)?.nodes;
 
                 name = parent;
                 path = Some(resolved);
@@ -175,26 +160,20 @@ fn load_parent<L: TemplateLoader>(
     exclude: Option<&std::path::Path>,
     loader: &L,
 ) -> Result<(PathBuf, String), CompileError> {
-    assert!(
-        !parent.is_empty(),
-        "parent_path must not be empty",
-    );
+    assert!(!parent.is_empty(), "parent_path must not be empty",);
 
     loader
         .load_excluding(parent, exclude)?
         .ok_or_else(|| error_parent(parent))
 }
 
-fn merge_chain(
-    mut chain: Vec<(String, Vec<AstNode>)>,
-) -> Result<Vec<AstNode>, CompileError> {
+fn merge_chain(mut chain: Vec<(String, Vec<AstNode>)>) -> Result<Vec<AstNode>, CompileError> {
     assert!(
         !chain.is_empty(),
         "inheritance chain must have at least one template",
     );
 
-    let length = u32::try_from(chain.len())
-        .expect("chain length must fit in u32");
+    let length = u32::try_from(chain.len()).expect("chain length must fit in u32");
 
     assert!(
         length <= BLOCK_NESTING_DEPTH_MAX,
@@ -203,9 +182,9 @@ fn merge_chain(
 
     let loads = collect_loads(&chain);
 
-    let (_, root) = chain.pop().expect(
-        "chain must be non-empty (asserted above)",
-    );
+    let (_, root) = chain
+        .pop()
+        .expect("chain must be non-empty (asserted above)");
 
     let mut resolved = root;
     let mut iterations: u32 = 0;
@@ -230,9 +209,7 @@ fn merge_chain(
     Ok(resolved)
 }
 
-fn collect_loads(
-    chain: &[(String, Vec<AstNode>)],
-) -> Vec<AstNode> {
+fn collect_loads(chain: &[(String, Vec<AstNode>)]) -> Vec<AstNode> {
     assert!(
         u32::try_from(chain.len()).is_ok(),
         "chain length must fit in u32 for collect_loads",
@@ -252,10 +229,10 @@ fn collect_loads(
                 COLLECT_LOADS_ITERATIONS_MAX,
             );
 
-            if let AstNode::Load(load) = node {
-                if seen.insert(load.libraries.clone()) {
-                    loads.push(node.clone());
-                }
+            if let AstNode::Load(load) = node
+                && seen.insert(load.libraries.clone())
+            {
+                loads.push(node.clone());
             }
         }
     }
@@ -263,17 +240,10 @@ fn collect_loads(
     loads
 }
 
-fn inject_loads(
-    resolved: &mut Vec<AstNode>,
-    loads: Vec<AstNode>,
-) {
-    let count = u32::try_from(loads.len())
-        .expect("loads length must fit in u32");
+fn inject_loads(resolved: &mut Vec<AstNode>, loads: Vec<AstNode>) {
+    let count = u32::try_from(loads.len()).expect("loads length must fit in u32");
 
-    assert!(
-        count <= MERGE_ENTRIES_MAX,
-        "loads count exceeds maximum",
-    );
+    assert!(count <= MERGE_ENTRIES_MAX, "loads count exceeds maximum",);
 
     let existing: FxHashSet<Vec<String>> = resolved
         .iter()
@@ -298,10 +268,10 @@ fn inject_loads(
             INJECT_ITERATIONS_MAX,
         );
 
-        if let AstNode::Load(ref node) = load {
-            if !existing.contains(&node.libraries) {
-                inject.push(load);
-            }
+        if let AstNode::Load(ref node) = load
+            && !existing.contains(&node.libraries)
+        {
+            inject.push(load);
         }
     }
 
@@ -339,9 +309,7 @@ fn inject_loads(
     }
 }
 
-fn extract_blocks<'a>(
-    nodes: &'a [AstNode],
-) -> FxHashMap<&'a str, &'a [AstNode]> {
+fn extract_blocks<'a>(nodes: &'a [AstNode]) -> FxHashMap<&'a str, &'a [AstNode]> {
     assert!(
         nodes.len() <= REPLACE_NODES_MAX as usize,
         "extract_blocks input exceeds maximum node count",
@@ -380,27 +348,16 @@ fn merge_blocks(
     parent: &FxHashMap<&str, &[AstNode]>,
     child: &FxHashMap<&str, &[AstNode]>,
 ) -> FxHashMap<String, Vec<AstNode>> {
-    let count = u32::try_from(parent.len())
-        .expect("parent length must fit in u32");
+    let count = u32::try_from(parent.len()).expect("parent length must fit in u32");
 
-    assert!(
-        count <= MERGE_ENTRIES_MAX,
-        "parent count exceeds maximum",
-    );
+    assert!(count <= MERGE_ENTRIES_MAX, "parent count exceeds maximum",);
 
-    let count = u32::try_from(child.len())
-        .expect("child length must fit in u32");
+    let count = u32::try_from(child.len()).expect("child length must fit in u32");
 
-    assert!(
-        count <= MERGE_ENTRIES_MAX,
-        "child count exceeds maximum",
-    );
+    assert!(count <= MERGE_ENTRIES_MAX, "child count exceeds maximum",);
 
     let mut merged: FxHashMap<String, Vec<AstNode>> =
-        FxHashMap::with_capacity_and_hasher(
-            parent.len() + child.len(),
-            Default::default(),
-        );
+        FxHashMap::with_capacity_and_hasher(parent.len() + child.len(), Default::default());
 
     let mut iterations: u32 = 0;
 
@@ -434,11 +391,7 @@ fn merge_blocks(
         });
 
         if has_super {
-            let spliced = splice_super(
-                name,
-                content,
-                &merged,
-            );
+            let spliced = splice_super(name, content, &merged);
 
             merged.insert(name.to_string(), spliced);
         } else {
@@ -463,9 +416,7 @@ fn splice_super(
         return content.to_vec();
     };
 
-    let total = u32::try_from(
-        content.len() + parent.len()
-    ).expect("splice total must fit in u32");
+    let total = u32::try_from(content.len() + parent.len()).expect("splice total must fit in u32");
 
     assert!(
         total <= SPLICE_NODES_MAX,
@@ -484,11 +435,11 @@ fn splice_super(
             SPLICE_NODES_MAX,
         );
 
-        if let AstNode::Variable(variable) = node {
-            if variable.expression.trim() == "block.super" {
-                spliced.extend(parent.iter().cloned());
-                continue;
-            }
+        if let AstNode::Variable(variable) = node
+            && variable.expression.trim() == "block.super"
+        {
+            spliced.extend(parent.iter().cloned());
+            continue;
         }
 
         spliced.push(node.clone());
@@ -506,8 +457,7 @@ fn replace_blocks(
         "replace_blocks input exceeds maximum node count",
     );
 
-    let count = u32::try_from(blocks.len())
-        .expect("blocks length must fit in u32");
+    let count = u32::try_from(blocks.len()).expect("blocks length must fit in u32");
 
     assert!(
         count <= MERGE_ENTRIES_MAX,
@@ -541,8 +491,7 @@ fn replace_bounded(
                     .cloned()
                     .unwrap_or_else(|| block.content.clone());
 
-                let processed =
-                    replace_bounded(content, blocks, depth + 1)?;
+                let processed = replace_bounded(content, blocks, depth + 1)?;
 
                 result.push(AstNode::Block(Box::new(BlockNode {
                     raw: block.raw.clone(),
@@ -555,8 +504,7 @@ fn replace_bounded(
             AstNode::Extends(_) => {}
 
             _ => {
-                let processed =
-                    replace_children(node, blocks, depth)?;
+                let processed = replace_children(node, blocks, depth)?;
 
                 result.push(processed);
             }
@@ -576,8 +524,7 @@ fn replace_children(
         "replace_children depth exceeds AST_DEPTH_MAX",
     );
 
-    let count = u32::try_from(blocks.len())
-        .expect("blocks length must fit in u32");
+    let count = u32::try_from(blocks.len()).expect("blocks length must fit in u32");
 
     assert!(
         count <= MERGE_ENTRIES_MAX,

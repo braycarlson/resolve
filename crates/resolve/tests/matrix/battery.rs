@@ -1,6 +1,5 @@
 use crate::common::compile_simple;
 
-
 fn assert_round_trip(input: &str) {
     let output = compile_simple(input);
     let trimmed_input = input.trim();

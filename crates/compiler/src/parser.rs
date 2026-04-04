@@ -2,7 +2,6 @@ use crate::ast::*;
 use crate::error::{Diagnostic, ParseError, Severity};
 use crate::lexer::{Lexer, Token};
 
-
 const PARSE_ITERATIONS_MAX: u32 = 1_000_000;
 const NESTING_DEPTH_MAX: u32 = 128;
 
@@ -12,10 +11,17 @@ pub struct ParseOutput {
 }
 
 fn convert_filter(filters: &[crate::lexer::Filter<'_>]) -> Vec<Filter> {
-    filters.iter().map(|filter| Filter {
-        name: filter.name.to_string(),
-        arguments: filter.arguments.iter().map(|argument| argument.to_string()).collect(),
-    }).collect()
+    filters
+        .iter()
+        .map(|filter| Filter {
+            name: filter.name.to_string(),
+            arguments: filter
+                .arguments
+                .iter()
+                .map(|argument| argument.to_string())
+                .collect(),
+        })
+        .collect()
 }
 
 fn split_path(input: &str) -> (&str, &str) {
@@ -203,10 +209,7 @@ impl<'a> Parser<'a> {
     }
 
     fn leave(&mut self) {
-        assert!(
-            self.depth > 0,
-            "nesting depth underflow",
-        );
+        assert!(self.depth > 0, "nesting depth underflow",);
 
         self.depth -= 1;
     }
@@ -234,8 +237,7 @@ impl<'a> Parser<'a> {
     fn done(&self) -> bool {
         let position = self.position as usize;
 
-        position >= self.tokens.len()
-            || matches!(self.tokens[position], Token::Eof)
+        position >= self.tokens.len() || matches!(self.tokens[position], Token::Eof)
     }
 
     fn current(&self) -> &Token<'a> {
@@ -265,11 +267,7 @@ impl<'a> Parser<'a> {
 
             if self.done() {
                 self.warn(
-                    format!(
-                        "Unclosed '{}' tag (opened at token {})",
-                        end_tag,
-                        start,
-                    ),
+                    format!("Unclosed '{}' tag (opened at token {})", end_tag, start,),
                     start,
                 );
 
@@ -278,11 +276,11 @@ impl<'a> Parser<'a> {
 
             let mark = self.position;
 
-            if let Token::BlockEnd { tag, .. } = self.current() {
-                if *tag == end_tag {
-                    self.advance();
-                    break;
-                }
+            if let Token::BlockEnd { tag, .. } = self.current()
+                && *tag == end_tag
+            {
+                self.advance();
+                break;
             }
 
             match self.parse_node() {
@@ -290,10 +288,7 @@ impl<'a> Parser<'a> {
                 Ok(None) => {
                     if self.position == mark {
                         self.warn(
-                            format!(
-                                "Skipped unparseable token inside '{}'",
-                                end_tag,
-                            ),
+                            format!("Skipped unparseable token inside '{}'", end_tag,),
                             mark,
                         );
 
@@ -303,10 +298,7 @@ impl<'a> Parser<'a> {
                 Err(_) => {
                     if self.position == mark {
                         self.error(
-                            format!(
-                                "Error parsing child of '{}', skipping token",
-                                end_tag,
-                            ),
+                            format!("Error parsing child of '{}', skipping token", end_tag,),
                             mark,
                         );
 
@@ -335,14 +327,16 @@ impl<'a> Parser<'a> {
                 })))
             }
 
-            Token::Variable { expression, filters, raw } => {
+            Token::Variable {
+                expression,
+                filters,
+                raw,
+            } => {
                 self.advance();
 
                 let filters = convert_filter(&filters);
 
-                if let Some(node) =
-                    self.try_json_script(expression, &filters, raw)
-                {
+                if let Some(node) = self.try_json_script(expression, &filters, raw) {
                     Ok(Some(node))
                 } else {
                     Ok(Some(AstNode::Variable(Box::new(VariableNode {
@@ -425,19 +419,13 @@ impl<'a> Parser<'a> {
             "querystring" => self.parse_querystring(content, raw),
             "plural" => self.parse_plural(content, raw),
             "regroup" => self.parse_regroup(content, raw),
-            _ => {
-                Ok(Some(AstNode::Text(TextNode {
-                    content: raw.to_string(),
-                })))
-            }
+            _ => Ok(Some(AstNode::Text(TextNode {
+                content: raw.to_string(),
+            }))),
         }
     }
 
-    fn parse_block(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_block(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         self.enter()?;
 
         let name = content.trim_start_matches("block").trim();
@@ -452,11 +440,7 @@ impl<'a> Parser<'a> {
 
             if self.done() {
                 self.warn(
-                    format!(
-                        "Unclosed block '{}' (opened at token {})",
-                        name,
-                        start,
-                    ),
+                    format!("Unclosed block '{}' (opened at token {})", name, start,),
                     start,
                 );
                 break;
@@ -464,11 +448,11 @@ impl<'a> Parser<'a> {
 
             let mark = self.position;
 
-            if let Token::BlockEnd { tag, .. } = self.current() {
-                if *tag == "block" {
-                    self.advance();
-                    break;
-                }
+            if let Token::BlockEnd { tag, .. } = self.current()
+                && *tag == "block"
+            {
+                self.advance();
+                break;
             }
 
             if let Some(node) = self.parse_node()? {
@@ -496,11 +480,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_extends(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_extends(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let path = content
             .trim_start_matches("extends")
             .trim()
@@ -520,17 +500,11 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    fn parse_include(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_include(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let remainder = content.trim_start_matches("include").trim();
         let (segment, remainder) = split_path(remainder);
 
-        let path = segment
-            .trim_matches('\'')
-            .trim_matches('"');
+        let path = segment.trim_matches('\'').trim_matches('"');
 
         if path.is_empty() {
             self.error(
@@ -548,9 +522,10 @@ impl<'a> Parser<'a> {
             only = true;
         } else if remainder.starts_with("with")
             && (remainder.len() == 4
-                || remainder.as_bytes().get(4).is_some_and(
-                    |&byte| byte == b' ' || byte == b'\t',
-                ))
+                || remainder
+                    .as_bytes()
+                    .get(4)
+                    .is_some_and(|&byte| byte == b' ' || byte == b'\t'))
         {
             let remainder = remainder[4..].trim_start();
 
@@ -571,11 +546,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_if(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_if(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         self.enter()?;
 
         let condition = content.trim_start_matches("if").trim();
@@ -584,7 +555,11 @@ impl<'a> Parser<'a> {
         let mut else_branch: Option<Vec<AstNode>> = None;
 
         #[derive(PartialEq)]
-        enum IfPhase { True, Elif, Else }
+        enum IfPhase {
+            True,
+            Elif,
+            Else,
+        }
         let mut phase = IfPhase::True;
         let mut iterations: u32 = 0;
         let start = self.position;
@@ -595,10 +570,7 @@ impl<'a> Parser<'a> {
 
             if self.done() {
                 self.warn(
-                    format!(
-                        "Unclosed if tag (opened at token {})",
-                        start,
-                    ),
+                    format!("Unclosed if tag (opened at token {})", start,),
                     start,
                 );
                 break;
@@ -607,25 +579,22 @@ impl<'a> Parser<'a> {
             let mark = self.position;
             let token = self.current().clone();
 
-            if let Token::BlockEnd { tag, .. } = token {
-                if tag == "if" {
-                    self.advance();
-                    break;
-                }
+            if let Token::BlockEnd { tag, .. } = token
+                && tag == "if"
+            {
+                self.advance();
+                break;
             }
 
             if let Token::BlockStart {
-                tag,
-                content: body,
-                ..
+                tag, content: body, ..
             } = token
             {
                 match tag {
                     "elif" => {
                         self.advance();
 
-                        let condition =
-                            body.trim_start_matches("elif").trim().to_string();
+                        let condition = body.trim_start_matches("elif").trim().to_string();
 
                         elif_branches.push(ElifBranch {
                             condition,
@@ -684,11 +653,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_for(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_for(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         self.enter()?;
 
         let inner = content.trim_start_matches("for").trim();
@@ -715,10 +680,7 @@ impl<'a> Parser<'a> {
 
             if self.done() {
                 self.warn(
-                    format!(
-                        "Unclosed for tag (opened at token {})",
-                        start,
-                    ),
+                    format!("Unclosed for tag (opened at token {})", start,),
                     start,
                 );
 
@@ -727,20 +689,21 @@ impl<'a> Parser<'a> {
 
             let mark = self.position;
 
-            if let Token::BlockEnd { tag, .. } = self.current() {
-                if *tag == "for" {
-                    self.advance();
-                    break;
-                }
+            if let Token::BlockEnd { tag, .. } = self.current()
+                && *tag == "for"
+            {
+                self.advance();
+                break;
             }
 
-            if let Token::BlockStart { tag, .. } = self.current() {
-                if *tag == "empty" && !in_empty {
-                    self.advance();
-                    in_empty = true;
-                    empty_branch = Some(Vec::new());
-                    continue;
-                }
+            if let Token::BlockStart { tag, .. } = self.current()
+                && *tag == "empty"
+                && !in_empty
+            {
+                self.advance();
+                in_empty = true;
+                empty_branch = Some(Vec::new());
+                continue;
             }
 
             match self.parse_node()? {
@@ -776,11 +739,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_with(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_with(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let inner = content.trim_start_matches("with").trim();
         let (bindings, _) = parse_bindings(inner);
         let body = self.parse_until("with")?;
@@ -792,11 +751,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_load(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_load(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let libraries = content
             .trim_start_matches("load")
             .split_whitespace()
@@ -809,11 +764,7 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    fn parse_static(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_static(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let inner = content.trim_start_matches("static").trim();
         let path = inner.trim_matches('\'').trim_matches('"');
 
@@ -823,10 +774,7 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    fn parse_comment_block(
-        &mut self,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_comment_block(&mut self, raw: &str) -> Result<Option<AstNode>, ParseError> {
         self.enter()?;
 
         let mut content = String::new();
@@ -836,11 +784,11 @@ impl<'a> Parser<'a> {
                 break;
             }
 
-            if let Token::BlockEnd { tag, .. } = self.current() {
-                if *tag == "comment" {
-                    self.advance();
-                    break;
-                }
+            if let Token::BlockEnd { tag, .. } = self.current()
+                && *tag == "comment"
+            {
+                self.advance();
+                break;
             }
 
             if let Some(AstNode::Text(text)) = self.parse_node()? {
@@ -878,18 +826,16 @@ impl<'a> Parser<'a> {
     ) -> Result<Option<AstNode>, ParseError> {
         let body = self.parse_until("blocktranslate")?;
 
-        Ok(Some(AstNode::Blocktranslate(Box::new(BlocktranslateNode {
-            raw: raw.to_string(),
-            body,
-            modifiers: Vec::new(),
-        }))))
+        Ok(Some(AstNode::Blocktranslate(Box::new(
+            BlocktranslateNode {
+                raw: raw.to_string(),
+                body,
+                modifiers: Vec::new(),
+            },
+        ))))
     }
 
-    fn parse_trans(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_trans(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let message = content
             .trim_start_matches("trans")
             .trim()
@@ -902,11 +848,7 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    fn parse_language(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_language(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let language = content
             .trim_start_matches("language")
             .trim()
@@ -922,10 +864,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_verbatim(
-        &mut self,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_verbatim(&mut self, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let mut content = String::new();
 
         if let Token::Text(text) = self.current().clone() {
@@ -953,11 +892,7 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    fn parse_ifchanged(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_ifchanged(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         self.enter()?;
 
         let condition = content.trim_start_matches("ifchanged").trim();
@@ -973,10 +908,7 @@ impl<'a> Parser<'a> {
 
             if self.done() {
                 self.warn(
-                    format!(
-                        "Unclosed ifchanged tag (opened at token {})",
-                        start,
-                    ),
+                    format!("Unclosed ifchanged tag (opened at token {})", start,),
                     start,
                 );
                 break;
@@ -985,20 +917,21 @@ impl<'a> Parser<'a> {
             let mark = self.position;
             let token = self.current().clone();
 
-            if let Token::BlockEnd { tag, .. } = token {
-                if tag == "ifchanged" {
-                    self.advance();
-                    break;
-                }
+            if let Token::BlockEnd { tag, .. } = token
+                && tag == "ifchanged"
+            {
+                self.advance();
+                break;
             }
 
-            if let Token::BlockStart { tag, .. } = token {
-                if tag == "else" && !in_else {
-                    self.advance();
-                    else_branch = Some(Vec::new());
-                    in_else = true;
-                    continue;
-                }
+            if let Token::BlockStart { tag, .. } = token
+                && tag == "else"
+                && !in_else
+            {
+                self.advance();
+                else_branch = Some(Vec::new());
+                in_else = true;
+                continue;
             }
 
             match self.parse_node()? {
@@ -1037,11 +970,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_filter(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_filter(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let filter = content.trim_start_matches("filter").trim();
         let body = self.parse_until("filter")?;
 
@@ -1052,11 +981,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_now(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_now(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let format = content
             .trim_start_matches("now")
             .trim()
@@ -1069,11 +994,7 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    fn parse_cycle(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_cycle(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let parts: Vec<&str> = content
             .trim_start_matches("cycle")
             .split_whitespace()
@@ -1092,7 +1013,10 @@ impl<'a> Parser<'a> {
                 index += 2;
             } else {
                 values.push(
-                    parts[index].trim_matches('\'').trim_matches('"').to_string(),
+                    parts[index]
+                        .trim_matches('\'')
+                        .trim_matches('"')
+                        .to_string(),
                 );
 
                 index += 1;
@@ -1107,11 +1031,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_firstof(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_firstof(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let variables: Vec<String> = content
             .trim_start_matches("firstof")
             .split_whitespace()
@@ -1146,11 +1066,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_url(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_url(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let parts: Vec<&str> = content.split(" as ").collect();
 
         if parts.len() == 2 {
@@ -1192,11 +1108,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_cache(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_cache(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let inner = content.trim_start_matches("cache").trim();
         let parts: Vec<&str> = inner.split_whitespace().collect();
         let timeout = parts.first().unwrap_or(&"").to_string();
@@ -1211,11 +1123,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_localize(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_localize(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let value = content.trim_start_matches("localize").trim();
         let body = self.parse_until("localize")?;
 
@@ -1226,11 +1134,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_localtime(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_localtime(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let value = content.trim_start_matches("localtime").trim();
         let body = self.parse_until("localtime")?;
 
@@ -1241,10 +1145,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_spaceless(
-        &mut self,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_spaceless(&mut self, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let body = self.parse_until("spaceless")?;
 
         Ok(Some(AstNode::Spaceless(SpacelessNode {
@@ -1253,11 +1154,7 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    fn parse_timezone(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_timezone(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let timezone = content
             .trim_start_matches("timezone")
             .trim()
@@ -1273,10 +1170,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_utc(
-        &mut self,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_utc(&mut self, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let body = self.parse_until("utc")?;
 
         Ok(Some(AstNode::Utc(UtcNode {
@@ -1334,11 +1228,7 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    fn parse_lorem(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_lorem(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let parts: Vec<&str> = content
             .trim_start_matches("lorem")
             .split_whitespace()
@@ -1393,11 +1283,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_translate(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_translate(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let parts: Vec<&str> = content.split(" as ").collect();
 
         let body = parts
@@ -1423,11 +1309,7 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn parse_plural(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_plural(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let content = content.trim_start_matches("plural").trim();
 
         Ok(Some(AstNode::Plural(PluralNode {
@@ -1436,11 +1318,7 @@ impl<'a> Parser<'a> {
         })))
     }
 
-    fn parse_regroup(
-        &mut self,
-        content: &str,
-        raw: &str,
-    ) -> Result<Option<AstNode>, ParseError> {
+    fn parse_regroup(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let inner = content.trim_start_matches("regroup").trim();
         let parts: Vec<&str> = inner.split_whitespace().collect();
         let list = parts.first().unwrap_or(&"").to_string();
@@ -1455,14 +1333,8 @@ impl<'a> Parser<'a> {
         }))))
     }
 
-    fn try_json_script(
-        &self,
-        expression: &str,
-        filters: &[Filter],
-        raw: &str,
-    ) -> Option<AstNode> {
-        let json_script_filter =
-            filters.iter().find(|filter| filter.name == "json_script")?;
+    fn try_json_script(&self, expression: &str, filters: &[Filter], raw: &str) -> Option<AstNode> {
+        let json_script_filter = filters.iter().find(|filter| filter.name == "json_script")?;
 
         let id = json_script_filter
             .arguments

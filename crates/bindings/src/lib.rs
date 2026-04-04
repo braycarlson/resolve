@@ -7,7 +7,6 @@ use ::resolve::compiler::Compiler;
 use ::resolve::config::Config;
 use ::resolve::reporter::{Reporter, Verbosity};
 
-
 const TEMPLATE_DIRECTORIES_MAX: u32 = 256;
 const TEMPLATE_PATH_LENGTH_MAX: u32 = 4096;
 const DIRECTORY_PATH_LENGTH_MAX: u32 = 4096;
@@ -30,9 +29,7 @@ fn make_config(
     );
 
     let directory_count = u32::try_from(template_directories.len())
-        .map_err(|_| PyRuntimeError::new_err(
-            "template_directories length exceeds u32",
-        ))?;
+        .map_err(|_| PyRuntimeError::new_err("template_directories length exceeds u32"))?;
 
     assert!(
         directory_count <= TEMPLATE_DIRECTORIES_MAX,
@@ -45,27 +42,18 @@ fn make_config(
     );
 
     let output_length = u32::try_from(output_directory.len())
-        .map_err(|_| PyRuntimeError::new_err(
-            "output_directory length exceeds u32",
-        ))?;
+        .map_err(|_| PyRuntimeError::new_err("output_directory length exceeds u32"))?;
 
     assert!(
         output_length <= DIRECTORY_PATH_LENGTH_MAX,
         "output_directory length exceeds maximum",
     );
 
-    let template_paths: Vec<PathBuf> = template_directories
-        .iter()
-        .map(PathBuf::from)
-        .collect();
+    let template_paths: Vec<PathBuf> = template_directories.iter().map(PathBuf::from).collect();
 
-    let cache_path = PathBuf::from(
-        cache_directory.unwrap_or(DEFAULT_CACHE_DIRECTORY),
-    );
+    let cache_path = PathBuf::from(cache_directory.unwrap_or(DEFAULT_CACHE_DIRECTORY));
 
-    let vendor_path = PathBuf::from(
-        vendor_directory.unwrap_or(DEFAULT_VENDOR_DIRECTORY),
-    );
+    let vendor_path = PathBuf::from(vendor_directory.unwrap_or(DEFAULT_VENDOR_DIRECTORY));
 
     let venv_path = virtual_environment_path.map(PathBuf::from);
 
@@ -134,7 +122,8 @@ fn compile_all(
     let reporter = make_reporter(verbose);
     let compiler = Compiler::new(&config, &reporter);
 
-    compiler.compile_all()
+    compiler
+        .compile_all()
         .map_err(|error| PyRuntimeError::new_err(format!("{error}")))
 }
 
@@ -161,15 +150,10 @@ fn compile_single(
     no_cache: bool,
     no_vendor: bool,
 ) -> PyResult<()> {
-    assert!(
-        !template.is_empty(),
-        "template must not be empty",
-    );
+    assert!(!template.is_empty(), "template must not be empty",);
 
     let template_length = u32::try_from(template.len())
-        .map_err(|_| PyRuntimeError::new_err(
-            "template length exceeds u32",
-        ))?;
+        .map_err(|_| PyRuntimeError::new_err("template length exceeds u32"))?;
 
     assert!(
         template_length <= TEMPLATE_PATH_LENGTH_MAX,
@@ -189,7 +173,8 @@ fn compile_single(
     let reporter = make_reporter(verbose);
     let compiler = Compiler::new(&config, &reporter);
 
-    compiler.compile_single(template)
+    compiler
+        .compile_single(template)
         .map_err(|error| PyRuntimeError::new_err(format!("{error}")))
 }
 
@@ -223,7 +208,8 @@ fn dry_run(
     let reporter = make_reporter(verbose);
     let compiler = Compiler::new(&config, &reporter);
 
-    compiler.dry_run()
+    compiler
+        .dry_run()
         .map_err(|error| PyRuntimeError::new_err(format!("{error}")))
 }
 
@@ -257,7 +243,8 @@ fn validate(
     let reporter = make_reporter(verbose);
     let compiler = Compiler::new(&config, &reporter);
 
-    compiler.validate()
+    compiler
+        .validate()
         .map_err(|error| PyRuntimeError::new_err(format!("{error}")))
 }
 
@@ -365,9 +352,7 @@ fn clean(
     for directory in &directories {
         if directory.exists() {
             std::fs::remove_dir_all(directory)
-                .map_err(|error| PyRuntimeError::new_err(
-                    format!("{error}"),
-                ))?;
+                .map_err(|error| PyRuntimeError::new_err(format!("{error}")))?;
 
             reporter.info(&format!("Removed: {}", directory.display()));
         }

@@ -2,7 +2,6 @@ use std::fmt;
 
 use thiserror::Error;
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Span {
     pub start: u32,
@@ -59,9 +58,7 @@ impl fmt::Display for Diagnostic {
         write!(
             formatter,
             "[{}] at position {}: {}",
-            label,
-            self.position,
-            self.message,
+            label, self.position, self.message,
         )
     }
 }
@@ -117,9 +114,7 @@ pub enum CompileError {
     #[error("Inheritance chain is empty for template: {template}")]
     EmptyInheritanceChain { template: String },
 
-    #[error(
-        "Inheritance chain exceeds maximum depth {max_depth} for template: {template}"
-    )]
+    #[error("Inheritance chain exceeds maximum depth {max_depth} for template: {template}")]
     InheritanceDepthExceeded { max_depth: u32, template: String },
 
     #[error("AST depth exceeds maximum {max_depth}")]
@@ -128,10 +123,12 @@ pub enum CompileError {
     #[error("Node count exceeds maximum {max} for template: {template}")]
     NodeLimitExceeded { template: String, max: u32 },
 
-    #[error(
-        "Parsed template '{path}' produced {count} nodes, exceeds maximum {max}"
-    )]
-    ParsedNodeLimitExceeded { path: String, count: usize, max: u32 },
+    #[error("Parsed template '{path}' produced {count} nodes, exceeds maximum {max}")]
+    ParsedNodeLimitExceeded {
+        path: String,
+        count: usize,
+        max: u32,
+    },
 
     #[error("Failed to read template '{path}': {message}")]
     TemplateRead { path: String, message: String },

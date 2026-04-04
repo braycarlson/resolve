@@ -18,6 +18,7 @@ jobs:
       - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
         with:
           python-version: '3.12'
+          enable-cache: false
 
       - uses: dtolnay/rust-toolchain@stable
 
@@ -31,6 +32,7 @@ jobs:
       - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
         with:
           python-version: '3.12'
+          enable-cache: false
 
       - uses: dtolnay/rust-toolchain@stable
         with:

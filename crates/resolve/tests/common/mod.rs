@@ -14,7 +14,6 @@ use resolve::config::{
 };
 use resolve::loader::{FsTemplateLoader, VendorIndex};
 
-
 pub fn create_test_config(temp_dir: &TempDir) -> Config {
     Config {
         compiler: CompilerConfig {
@@ -94,13 +93,8 @@ pub fn compile_template(temp_dir: &TempDir, name: &str) -> String {
     )
     .unwrap_or_else(|_| parse(&content).unwrap());
 
-    let resolved = compiler::resolver::inclusion::resolve(
-        resolved,
-        name,
-        &loader,
-        &limits,
-    )
-    .unwrap_or_else(|_| parse(&content).unwrap());
+    let resolved = compiler::resolver::inclusion::resolve(resolved, name, &loader, &limits)
+        .unwrap_or_else(|_| parse(&content).unwrap());
 
     generate(&resolved)
 }

@@ -1,6 +1,5 @@
 use crate::ast::*;
 
-
 const STACK_CAPACITY_INITIAL: u32 = 64;
 const OUTPUT_CAPACITY_PER_NODE: u32 = 64;
 const WORK_ITERATIONS_MAX: u32 = 10_000_000;
@@ -21,9 +20,7 @@ pub fn generate(nodes: &[AstNode]) -> String {
 
     let count = nodes.len();
 
-    let mut output = String::with_capacity(
-        count.saturating_mul(OUTPUT_CAPACITY_PER_NODE as usize),
-    );
+    let mut output = String::with_capacity(count.saturating_mul(OUTPUT_CAPACITY_PER_NODE as usize));
 
     let mut stack: Vec<Work> = Vec::with_capacity(STACK_CAPACITY_INITIAL as usize);
 
@@ -111,7 +108,8 @@ fn collapse(input: &str) -> String {
 
 #[inline]
 fn blank(line: &[u8]) -> bool {
-    line.iter().all(|&byte| byte == b' ' || byte == b'\t' || byte == b'\r')
+    line.iter()
+        .all(|&byte| byte == b' ' || byte == b'\t' || byte == b'\r')
 }
 
 #[inline(always)]
@@ -150,12 +148,7 @@ fn enqueue<'a>(node: &'a AstNode, stack: &mut Vec<Work<'a>>) {
         }
 
         AstNode::Verbatim(verbatim) => {
-            enqueue_bookend(
-                &verbatim.raw,
-                &verbatim.content,
-                "{% endverbatim %}",
-                stack,
-            );
+            enqueue_bookend(&verbatim.raw, &verbatim.content, "{% endverbatim %}", stack);
         }
 
         AstNode::With(with) => {
@@ -172,12 +165,7 @@ fn enqueue<'a>(node: &'a AstNode, stack: &mut Vec<Work<'a>>) {
         }
 
         AstNode::Language(language) => {
-            enqueue_body(
-                &language.raw,
-                &language.body,
-                "{% endlanguage %}",
-                stack,
-            );
+            enqueue_body(&language.raw, &language.body, "{% endlanguage %}", stack);
         }
 
         AstNode::FilterBlock(filter_block) => {
@@ -194,39 +182,19 @@ fn enqueue<'a>(node: &'a AstNode, stack: &mut Vec<Work<'a>>) {
         }
 
         AstNode::Localize(localize) => {
-            enqueue_body(
-                &localize.raw,
-                &localize.body,
-                "{% endlocalize %}",
-                stack,
-            );
+            enqueue_body(&localize.raw, &localize.body, "{% endlocalize %}", stack);
         }
 
         AstNode::Localtime(localtime) => {
-            enqueue_body(
-                &localtime.raw,
-                &localtime.body,
-                "{% endlocaltime %}",
-                stack,
-            );
+            enqueue_body(&localtime.raw, &localtime.body, "{% endlocaltime %}", stack);
         }
 
         AstNode::Spaceless(spaceless) => {
-            enqueue_body(
-                &spaceless.raw,
-                &spaceless.body,
-                "{% endspaceless %}",
-                stack,
-            );
+            enqueue_body(&spaceless.raw, &spaceless.body, "{% endspaceless %}", stack);
         }
 
         AstNode::Timezone(timezone) => {
-            enqueue_body(
-                &timezone.raw,
-                &timezone.body,
-                "{% endtimezone %}",
-                stack,
-            );
+            enqueue_body(&timezone.raw, &timezone.body, "{% endtimezone %}", stack);
         }
 
         AstNode::Utc(utc) => {
@@ -283,7 +251,7 @@ fn enqueue_raw<'a>(node: &'a AstNode, stack: &mut Vec<Work<'a>>) {
         AstNode::Translate(translate) => &translate.raw,
         AstNode::Plural(plural) => &plural.raw,
         AstNode::Regroup(regroup) => &regroup.raw,
-        _ => unreachable!("variant handled by enqueue directly")
+        _ => unreachable!("variant handled by enqueue directly"),
     };
 
     stack.push(Work::Literal(raw));

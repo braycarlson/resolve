@@ -7,7 +7,6 @@ use resolve::compiler::Compiler;
 use resolve::config::Config;
 use resolve::reporter::{Reporter, Verbosity};
 
-
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
@@ -24,7 +23,7 @@ pub struct Cli {
     #[arg(
         short,
         long,
-        help = "Django project root (auto-detects templates and venv)",
+        help = "Django project root (auto-detects templates and venv)"
     )]
     pub project: Option<PathBuf>,
 
@@ -108,7 +107,12 @@ fn run() -> Result<()> {
         }
     };
 
-    if let Commands::Compile { no_cache, no_vendor, .. } = &cli.command {
+    if let Commands::Compile {
+        no_cache,
+        no_vendor,
+        ..
+    } = &cli.command
+    {
         if *no_cache {
             config.incremental.enabled = false;
         }
@@ -125,9 +129,7 @@ fn run() -> Result<()> {
 
     match cli.command {
         Commands::Compile {
-            template,
-            dry_run,
-            ..
+            template, dry_run, ..
         } => {
             if dry_run {
                 compiler.dry_run()?;
@@ -162,10 +164,7 @@ fn run() -> Result<()> {
             for directory in &directories {
                 if directory.exists() {
                     std::fs::remove_dir_all(directory)?;
-                    reporter.info(&format!(
-                        "  Removed: {}",
-                        directory.display(),
-                    ));
+                    reporter.info(&format!("  Removed: {}", directory.display(),));
                 }
             }
         }
@@ -174,10 +173,7 @@ fn run() -> Result<()> {
     Ok(())
 }
 
-fn resolve_config(
-    cli: &Cli,
-    reporter: &Reporter,
-) -> Result<(Config, ConfigSource)> {
+fn resolve_config(cli: &Cli, reporter: &Reporter) -> Result<(Config, ConfigSource)> {
     if let Some(ref path) = cli.config {
         let config = resolve::config::load(path)?;
         return Ok((config, ConfigSource::File));
@@ -199,13 +195,10 @@ fn resolve_config(
         project,
     );
 
-    reporter.debug(&format!(
-        "Auto-detecting from: {}",
-        project.display(),
-    ));
+    reporter.debug(&format!("Auto-detecting from: {}", project.display(),));
 
-    let config = Config::from_project_directory(&project)
-        .map_err(|error| anyhow::anyhow!("{}", error))?;
+    let config =
+        Config::from_project_directory(&project).map_err(|error| anyhow::anyhow!("{}", error))?;
 
     Ok((config, ConfigSource::AutoDetected))
 }
@@ -218,11 +211,7 @@ fn print_header(reporter: &Reporter) {
     ));
 }
 
-fn print_config(
-    config: &Config,
-    source: ConfigSource,
-    reporter: &Reporter,
-) {
+fn print_config(config: &Config, source: ConfigSource, reporter: &Reporter) {
     let source_label = match source {
         ConfigSource::File => "resolve.toml",
         ConfigSource::AutoDetected => "auto-detected",

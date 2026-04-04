@@ -153,10 +153,7 @@ const _: () = assert!(std::mem::size_of::<AstNode>() <= 56);
 impl AstNode {
     /// Push all direct child node slices onto a traversal stack.
     /// Covers every variant that contains nested `Vec<AstNode>` fields.
-    pub fn push_child_slices<'a>(
-        &'a self,
-        stack: &mut Vec<&'a [AstNode]>,
-    ) {
+    pub fn push_child_slices<'a>(&'a self, stack: &mut Vec<&'a [AstNode]>) {
         match self {
             AstNode::Block(block) => stack.push(&block.content),
             AstNode::If(if_node) => {

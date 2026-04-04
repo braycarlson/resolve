@@ -1,6 +1,5 @@
 use crate::common::compile_simple;
 
-
 #[test]
 fn test_matrix_codegen_custom_filters_preserved() {
     let template = r#"{{ person.first_name|add_str:' '|add_str:person.last_name }}"#;
@@ -12,7 +11,8 @@ fn test_matrix_codegen_custom_filters_preserved() {
 
 #[test]
 fn test_matrix_codegen_custom_filter_family_preserved() {
-    let template = r#"{{ record|model_app_label }} {{ record|model_name }} {{ payload|safe_dict_items }}"#;
+    let template =
+        r#"{{ record|model_app_label }} {{ record|model_name }} {{ payload|safe_dict_items }}"#;
     let output = compile_simple(template);
 
     assert!(output.contains("|model_app_label"));
@@ -161,7 +161,10 @@ fn test_matrix_codegen_alpine_and_runtime_tags_preserved() {
 
     assert!(output.contains("x-data"));
     assert!(output.contains(r#"{{ selected_key|default:"summary" }}"#));
-    assert!(output.contains(r#"{% url "fake_api:items" %}"#) || output.contains("{% url 'fake_api:items' %}"));
+    assert!(
+        output.contains(r#"{% url "fake_api:items" %}"#)
+            || output.contains("{% url 'fake_api:items' %}")
+    );
     assert!(output.contains("{% if is_ready %}"));
     assert!(output.contains("{% include 'components/fake_ready_state.html' %}"));
     assert!(output.contains("{% endif %}"));
@@ -202,7 +205,8 @@ fn test_matrix_codegen_literal_string_prefix_variable_preserved() {
 
 #[test]
 fn test_matrix_codegen_slice_add_str_chain_preserved() {
-    let template = r#"{{ obj_a.owner.first_name|slice:":1"|add_str:obj_a.owner.last_name|slice:":2" }}"#;
+    let template =
+        r#"{{ obj_a.owner.first_name|slice:":1"|add_str:obj_a.owner.last_name|slice:":2" }}"#;
     let output = compile_simple(template);
 
     assert_eq!(output.trim(), template.trim());

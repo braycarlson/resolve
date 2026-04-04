@@ -1,6 +1,5 @@
 use compiler::lexer::{Lexer, Token};
 
-
 #[test]
 fn test_lexer_simple_variable() {
     let mut lexer = Lexer::new("{{ variable }}");
@@ -8,7 +7,11 @@ fn test_lexer_simple_variable() {
 
     assert_eq!(tokens.len(), 2);
     match &tokens[0] {
-        Token::Variable { expression, filters, raw } => {
+        Token::Variable {
+            expression,
+            filters,
+            raw,
+        } => {
             assert_eq!(*expression, "variable");
             assert!(filters.is_empty());
             assert_eq!(*raw, "{{ variable }}");
@@ -24,7 +27,11 @@ fn test_lexer_variable_with_filter() {
 
     assert_eq!(tokens.len(), 2);
     match &tokens[0] {
-        Token::Variable { expression, filters, raw } => {
+        Token::Variable {
+            expression,
+            filters,
+            raw,
+        } => {
             assert_eq!(*expression, "variable|default:\"\"");
             assert_eq!(filters.len(), 1);
             assert_eq!(filters[0].name, "default");
@@ -691,9 +698,11 @@ fn test_lexer_block_comment() {
     let mut lexer = Lexer::new("{% comment %}Block comment{% endcomment %}");
     let tokens = lexer.tokenize().unwrap();
 
-    assert!(tokens
-        .iter()
-        .any(|t| matches!(t, Token::BlockStart { tag, .. } if *tag == "comment")));
+    assert!(
+        tokens
+            .iter()
+            .any(|t| matches!(t, Token::BlockStart { tag, .. } if *tag == "comment"))
+    );
 }
 
 #[test]
@@ -867,9 +876,11 @@ fn test_lexer_alpine_text_directive() {
     let mut lexer = Lexer::new(r#"<div x-text="message"></div>"#);
     let tokens = lexer.tokenize().unwrap();
 
-    assert!(tokens
-        .iter()
-        .any(|t| matches!(t, Token::Text(text) if text.contains("x-text"))));
+    assert!(
+        tokens
+            .iter()
+            .any(|t| matches!(t, Token::Text(text) if text.contains("x-text")))
+    );
 }
 
 #[test]
@@ -877,9 +888,11 @@ fn test_lexer_alpine_html_directive() {
     let mut lexer = Lexer::new(r#"<div x-html="content"></div>"#);
     let tokens = lexer.tokenize().unwrap();
 
-    assert!(tokens
-        .iter()
-        .any(|t| matches!(t, Token::Text(text) if text.contains("x-html"))));
+    assert!(
+        tokens
+            .iter()
+            .any(|t| matches!(t, Token::Text(text) if text.contains("x-html")))
+    );
 }
 
 #[test]
@@ -887,9 +900,11 @@ fn test_lexer_alpine_teleport() {
     let mut lexer = Lexer::new(r#"<div x-teleport="body"></div>"#);
     let tokens = lexer.tokenize().unwrap();
 
-    assert!(tokens
-        .iter()
-        .any(|t| matches!(t, Token::Text(text) if text.contains("x-teleport"))));
+    assert!(
+        tokens
+            .iter()
+            .any(|t| matches!(t, Token::Text(text) if text.contains("x-teleport")))
+    );
 }
 
 #[test]
@@ -897,9 +912,11 @@ fn test_lexer_alpine_id() {
     let mut lexer = Lexer::new(r#"<div x-id="['modal']"></div>"#);
     let tokens = lexer.tokenize().unwrap();
 
-    assert!(tokens
-        .iter()
-        .any(|t| matches!(t, Token::Text(text) if text.contains("x-id"))));
+    assert!(
+        tokens
+            .iter()
+            .any(|t| matches!(t, Token::Text(text) if text.contains("x-id")))
+    );
 }
 
 #[test]
@@ -1143,16 +1160,17 @@ fn test_lexer_filter_argument_colon_inside_quotes() {
     let tokens = lexer.tokenize().unwrap();
 
     match &tokens[0] {
-        Token::Variable { expression, filters, raw } => {
+        Token::Variable {
+            expression,
+            filters,
+            raw,
+        } => {
             assert_eq!(filters.len(), 1);
             assert_eq!(filters[0].name, "date");
             assert_eq!(filters[0].arguments.len(), 1);
             assert_eq!(filters[0].arguments[0], r#""H:i:s""#);
 
-            assert_eq!(
-                *raw,
-                r#"{{ event.start|date:"H:i:s" }}"#,
-            );
+            assert_eq!(*raw, r#"{{ event.start|date:"H:i:s" }}"#,);
 
             let base = expression.split('|').next().unwrap().trim();
             assert_eq!(base, "event.start");
@@ -1188,12 +1206,14 @@ fn test_lexer_empty_variable_expression() {
     let mut lexer = Lexer::new("{{  }}");
     let tokens = lexer.tokenize().unwrap();
 
-    let variable = tokens.iter().find(|t| {
-        matches!(t, Token::Variable { .. })
-    });
+    let variable = tokens.iter().find(|t| matches!(t, Token::Variable { .. }));
 
     match variable {
-        Some(Token::Variable { expression, filters, .. }) => {
+        Some(Token::Variable {
+            expression,
+            filters,
+            ..
+        }) => {
             assert!(
                 expression.is_empty(),
                 "Empty variable expression should trim to empty string. Got: '{}'",
@@ -1219,12 +1239,9 @@ fn test_lexer_empty_block_tag() {
     let mut lexer = Lexer::new("{%  %}");
     let tokens = lexer.tokenize().unwrap();
 
-    let block = tokens.iter().find(|t| {
-        matches!(
-            t,
-            Token::BlockStart { .. } | Token::BlockEnd { .. }
-        )
-    });
+    let block = tokens
+        .iter()
+        .find(|t| matches!(t, Token::BlockStart { .. } | Token::BlockEnd { .. }));
 
     match block {
         Some(Token::BlockStart { tag, content, .. }) => {
@@ -1257,8 +1274,7 @@ fn test_lexer_empty_block_tag() {
 
 #[test]
 fn test_lexer_verbatim_with_fake_endverbatim_trailing_content() {
-    let template =
-        "{% verbatim %}raw {{ var }} {% endverbatim extra %}still raw{% endverbatim %}";
+    let template = "{% verbatim %}raw {{ var }} {% endverbatim extra %}still raw{% endverbatim %}";
     let mut lexer = Lexer::new(template);
     let tokens = lexer.tokenize().unwrap();
 
@@ -1311,18 +1327,12 @@ fn test_lexer_adjacent_delimiters_no_whitespace() {
     let if_start = tokens
         .iter()
         .find(|t| matches!(t, Token::BlockStart { tag, .. } if *tag == "if"));
-    assert!(
-        if_start.is_some(),
-        "Should produce a BlockStart for 'if'",
-    );
+    assert!(if_start.is_some(), "Should produce a BlockStart for 'if'",);
 
     let if_end = tokens
         .iter()
         .find(|t| matches!(t, Token::BlockEnd { tag, .. } if *tag == "if"));
-    assert!(
-        if_end.is_some(),
-        "Should produce a BlockEnd for 'endif'",
-    );
+    assert!(if_end.is_some(), "Should produce a BlockEnd for 'endif'",);
 
     let text_between = tokens
         .iter()

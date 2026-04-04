@@ -1,24 +1,72 @@
 use rustc_hash::FxHashSet;
 
-
 const DJANGO_BUILTIN_FILTERS: &[&str] = &[
-    "add", "addslashes", "capfirst", "center", "cut", "date",
-    "default", "default_if_none", "dictsort", "dictsortreversed",
-    "divisibleby", "escape", "escapejs", "filesizeformat", "first",
-    "floatformat", "force_escape", "get_digit", "iriencode", "join",
-    "json_script", "last", "length", "length_is", "linebreaks",
-    "linebreaksbr", "linenumbers", "ljust", "lower", "make_list",
-    "phone2numeric", "pluralize", "pprint", "random", "rjust", "safe",
-    "safeseq", "slice", "slugify", "stringformat", "striptags",
-    "time", "timesince", "timeuntil", "title", "truncatechars",
-    "truncatechars_html", "truncatewords", "truncatewords_html",
-    "unordered_list", "upper", "urlencode", "urlize", "urlizetrunc",
-    "wordcount", "wordwrap", "yesno",
+    "add",
+    "addslashes",
+    "capfirst",
+    "center",
+    "cut",
+    "date",
+    "default",
+    "default_if_none",
+    "dictsort",
+    "dictsortreversed",
+    "divisibleby",
+    "escape",
+    "escapejs",
+    "filesizeformat",
+    "first",
+    "floatformat",
+    "force_escape",
+    "get_digit",
+    "iriencode",
+    "join",
+    "json_script",
+    "last",
+    "length",
+    "length_is",
+    "linebreaks",
+    "linebreaksbr",
+    "linenumbers",
+    "ljust",
+    "lower",
+    "make_list",
+    "phone2numeric",
+    "pluralize",
+    "pprint",
+    "random",
+    "rjust",
+    "safe",
+    "safeseq",
+    "slice",
+    "slugify",
+    "stringformat",
+    "striptags",
+    "time",
+    "timesince",
+    "timeuntil",
+    "title",
+    "truncatechars",
+    "truncatechars_html",
+    "truncatewords",
+    "truncatewords_html",
+    "unordered_list",
+    "upper",
+    "urlencode",
+    "urlize",
+    "urlizetrunc",
+    "wordcount",
+    "wordwrap",
+    "yesno",
 ];
 
 const DJANGO_HUMANIZE_FILTERS: &[&str] = &[
-    "apnumber", "intcomma", "intword",
-    "naturalday", "naturaltime", "ordinal",
+    "apnumber",
+    "intcomma",
+    "intword",
+    "naturalday",
+    "naturaltime",
+    "ordinal",
 ];
 
 const SPIRE_FILTERS: &[&str] = &[
@@ -69,8 +117,10 @@ pub fn all() -> FxHashSet<String> {
 }
 
 pub fn simple_tags() -> FxHashSet<String> {
-    let tags: FxHashSet<String> =
-        SPIRE_SIMPLE_TAGS.iter().map(|string| string.to_string()).collect();
+    let tags: FxHashSet<String> = SPIRE_SIMPLE_TAGS
+        .iter()
+        .map(|string| string.to_string())
+        .collect();
 
     assert!(
         tags.is_empty() || !tags.is_empty(),
@@ -81,10 +131,7 @@ pub fn simple_tags() -> FxHashSet<String> {
 }
 
 pub fn validate_filter(name: &str) -> Result<(), String> {
-    assert!(
-        !name.is_empty(),
-        "filter_name must not be empty",
-    );
+    assert!(!name.is_empty(), "filter_name must not be empty",);
 
     let filters = all();
 
@@ -101,8 +148,7 @@ pub fn validate_filter(name: &str) -> Result<(), String> {
 }
 
 pub fn validate_filters(filters: &[compiler::ast::Filter]) -> Vec<String> {
-    let count = u32::try_from(filters.len())
-        .expect("filter count must fit in u32");
+    let count = u32::try_from(filters.len()).expect("filter count must fit in u32");
 
     assert!(
         count <= 100,

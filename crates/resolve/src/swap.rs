@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::reporter::Reporter;
 
-
 const STAGING_SUFFIX: &str = "_staging";
 const PREVIOUS_SUFFIX: &str = "_previous";
 const JOURNAL_SUFFIX: &str = "_swap_journal.json";
@@ -20,10 +19,7 @@ struct SwapJournal {
 }
 
 pub fn staging_path(output: &Path) -> PathBuf {
-    let name = output
-        .file_name()
-        .unwrap_or_default()
-        .to_string_lossy();
+    let name = output.file_name().unwrap_or_default().to_string_lossy();
 
     assert!(
         !name.is_empty(),
@@ -46,10 +42,7 @@ pub fn staging_path(output: &Path) -> PathBuf {
 }
 
 fn previous_path(output: &Path) -> PathBuf {
-    let name = output
-        .file_name()
-        .unwrap_or_default()
-        .to_string_lossy();
+    let name = output.file_name().unwrap_or_default().to_string_lossy();
 
     assert!(
         !name.is_empty(),
@@ -72,10 +65,7 @@ fn previous_path(output: &Path) -> PathBuf {
 }
 
 fn journal_path(output: &Path) -> PathBuf {
-    let name = output
-        .file_name()
-        .unwrap_or_default()
-        .to_string_lossy();
+    let name = output.file_name().unwrap_or_default().to_string_lossy();
 
     assert!(
         !name.is_empty(),
@@ -164,10 +154,7 @@ fn cleanup(directory: &Path) -> Result<()> {
     Ok(())
 }
 
-pub fn recover_interrupted(
-    output: &Path,
-    reporter: &Reporter,
-) -> Result<()> {
+pub fn recover_interrupted(output: &Path, reporter: &Reporter) -> Result<()> {
     assert!(
         !output.as_os_str().is_empty(),
         "output must not be empty for recovery",
@@ -212,11 +199,7 @@ pub fn recover_interrupted(
     Ok(())
 }
 
-pub fn swap_staging_to_output(
-    staging: &Path,
-    output: &Path,
-    reporter: &Reporter,
-) -> Result<()> {
+pub fn swap_staging_to_output(staging: &Path, output: &Path, reporter: &Reporter) -> Result<()> {
     assert!(
         staging.exists(),
         "staging directory must exist before swap: {:?}",

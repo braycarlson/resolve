@@ -7,7 +7,6 @@ use anyhow::{Context, Result};
 use rustc_hash::FxHashSet;
 use walkdir::WalkDir;
 
-
 const VIRTUAL_ENVIRONMENT_PROBE_NAMES: &[&str] = &[".venv", "venv"];
 
 const SITE_PACKAGES_ENTRIES_MAX: u32 = 10_000;
@@ -50,11 +49,7 @@ impl<'a> VendorManager<'a> {
             return Ok(true);
         }
 
-        assert!(
-            path.is_dir(),
-            "vendor_path must be a directory: {:?}",
-            path,
-        );
+        assert!(path.is_dir(), "vendor_path must be a directory: {:?}", path,);
 
         let sources = self.discover()?;
 
@@ -87,10 +82,8 @@ impl<'a> VendorManager<'a> {
             return Ok(Vec::new());
         };
 
-        self.reporter.debug(&format!(
-            "Scanning site-packages: {:?}",
-            packages,
-        ));
+        self.reporter
+            .debug(&format!("Scanning site-packages: {:?}", packages,));
 
         scan_packages(&packages, self.reporter)
     }
@@ -106,7 +99,8 @@ impl<'a> VendorManager<'a> {
         let sources = self.discover()?;
 
         if sources.is_empty() {
-            self.reporter.debug("No vendor packages with templates found");
+            self.reporter
+                .debug("No vendor packages with templates found");
             return Ok(0);
         }
 
@@ -118,10 +112,7 @@ impl<'a> VendorManager<'a> {
             copied += sync_source(source, path, self.reporter)?;
         }
 
-        assert!(
-            path.exists(),
-            "vendor directory must exist after sync",
-        );
+        assert!(path.exists(), "vendor directory must exist after sync",);
 
         Ok(copied)
     }
@@ -130,19 +121,16 @@ impl<'a> VendorManager<'a> {
         let path = self.config.vendor_path();
 
         if !path.exists() {
-            self.reporter.info(
-                "Vendor directory does not exist. Run 'vendor sync' to create it.",
-            );
+            self.reporter
+                .info("Vendor directory does not exist. Run 'vendor sync' to create it.");
 
             return Ok(());
         }
 
         let sources = self.discover()?;
 
-        self.reporter.info(&format!(
-            "Discovered {} vendor packages:",
-            sources.len(),
-        ));
+        self.reporter
+            .info(&format!("Discovered {} vendor packages:", sources.len(),));
 
         for source in &sources {
             self.reporter.info(&format!(
@@ -155,19 +143,16 @@ impl<'a> VendorManager<'a> {
         let stale = self.is_vendor_stale()?;
 
         if stale {
-            self.reporter.info(
-                "Vendor templates are stale. Run 'vendor sync' to update.",
-            );
+            self.reporter
+                .info("Vendor templates are stale. Run 'vendor sync' to update.");
         } else {
             self.reporter.info("Vendor templates are up to date.");
         }
 
         let count = count_templates(path);
 
-        self.reporter.info(&format!(
-            "Vendor contains {} templates",
-            count,
-        ));
+        self.reporter
+            .info(&format!("Vendor contains {} templates", count,));
 
         Ok(())
     }
@@ -253,11 +238,10 @@ fn find_site_packages(
         "template_directories must not be empty for site-packages search",
     );
 
-    let environment =
-        match find_environment(config, directories, reporter) {
-            Some(environment) => environment,
-            None => return Ok(None),
-        };
+    let environment = match find_environment(config, directories, reporter) {
+        Some(environment) => environment,
+        None => return Ok(None),
+    };
 
     assert!(
         environment.is_dir(),
@@ -277,8 +261,7 @@ fn find_site_packages(
         return Ok(None);
     }
 
-    let entries = fs::read_dir(&lib)
-        .context("failed to read virtual environment lib directory")?;
+    let entries = fs::read_dir(&lib).context("failed to read virtual environment lib directory")?;
 
     for entry in entries {
         let entry = entry?;
@@ -298,10 +281,7 @@ fn find_site_packages(
 }
 
 fn skip_package(name: &str) -> bool {
-    assert!(
-        !name.is_empty(),
-        "package name must not be empty",
-    );
+    assert!(!name.is_empty(), "package name must not be empty",);
 
     if name.ends_with(".dist-info")
         || name.ends_with(".egg-info")
@@ -321,25 +301,20 @@ fn skip_package(name: &str) -> bool {
     false
 }
 
-fn scan_packages(
-    packages: &Path,
-    reporter: &Reporter,
-) -> Result<Vec<VendorSource>> {
+fn scan_packages(packages: &Path, reporter: &Reporter) -> Result<Vec<VendorSource>> {
     assert!(
         packages.is_dir(),
         "site_packages must be a directory: {:?}",
         packages,
     );
 
-    let entries = fs::read_dir(packages)
-        .context("failed to read site-packages")?;
+    let entries = fs::read_dir(packages).context("failed to read site-packages")?;
 
     let mut sources = Vec::with_capacity(16);
     let mut seen: FxHashSet<String> = FxHashSet::default();
 
     for (index, entry) in entries.enumerate() {
-        let count = u32::try_from(index)
-            .expect("site-packages entry index must fit in u32");
+        let count = u32::try_from(index).expect("site-packages entry index must fit in u32");
 
         assert!(
             count < SITE_PACKAGES_ENTRIES_MAX,
@@ -469,7 +444,8 @@ fn find_templates(package: &Path) -> Vec<PathBuf> {
             .into_iter()
             .filter_map(|entry| entry.ok())
             .any(|entry| {
-                entry.path()
+                entry
+                    .path()
                     .extension()
                     .is_some_and(|extension| extension == "html")
             });
@@ -482,10 +458,7 @@ fn find_templates(package: &Path) -> Vec<PathBuf> {
     directories
 }
 
-fn scan_pth(
-    packages: &Path,
-    reporter: &Reporter,
-) -> Result<Vec<VendorSource>> {
+fn scan_pth(packages: &Path, reporter: &Reporter) -> Result<Vec<VendorSource>> {
     assert!(
         packages.is_dir(),
         "site_packages must be a directory for pth scan: {:?}",
@@ -495,8 +468,7 @@ fn scan_pth(
     let mut sources = Vec::with_capacity(4);
     let mut iterations: u32 = 0;
 
-    let entries = fs::read_dir(packages)
-        .context("failed to read site-packages for .pth files")?;
+    let entries = fs::read_dir(packages).context("failed to read site-packages for .pth files")?;
 
     for entry in entries {
         iterations += 1;
@@ -542,10 +514,7 @@ fn scan_pth(
 
             let line = line.trim();
 
-            if line.is_empty()
-                || line.starts_with('#')
-                || line.starts_with("import")
-            {
+            if line.is_empty() || line.starts_with('#') || line.starts_with("import") {
                 continue;
             }
 
@@ -598,10 +567,7 @@ fn scan_pth(
                     continue;
                 }
 
-                reporter.debug(&format!(
-                    "Found editable package '{}' via .pth file",
-                    name,
-                ));
+                reporter.debug(&format!("Found editable package '{}' via .pth file", name,));
 
                 sources.push(VendorSource {
                     name,
@@ -615,10 +581,7 @@ fn scan_pth(
     Ok(sources)
 }
 
-fn scan_editable(
-    packages: &Path,
-    reporter: &Reporter,
-) -> Result<Vec<VendorSource>> {
+fn scan_editable(packages: &Path, reporter: &Reporter) -> Result<Vec<VendorSource>> {
     assert!(
         packages.is_dir(),
         "site_packages must be a directory for dist-info scan: {:?}",
@@ -628,8 +591,7 @@ fn scan_editable(
     let mut sources = Vec::with_capacity(4);
     let mut iterations: u32 = 0;
 
-    let entries = fs::read_dir(packages)
-        .context("failed to read site-packages for dist-info")?;
+    let entries = fs::read_dir(packages).context("failed to read site-packages for dist-info")?;
 
     for entry in entries {
         iterations += 1;
@@ -667,11 +629,10 @@ fn scan_editable(
             Err(_) => continue,
         };
 
-        let url: serde_json::Value =
-            match serde_json::from_str(&content) {
-                Ok(value) => value,
-                Err(_) => continue,
-            };
+        let url: serde_json::Value = match serde_json::from_str(&content) {
+            Ok(value) => value,
+            Err(_) => continue,
+        };
 
         let is_editable = url
             .get("dir_info")
@@ -697,8 +658,7 @@ fn scan_editable(
             continue;
         }
 
-        let package = read_top_level(&path)
-            .unwrap_or_else(|| extract_name(&name));
+        let package = read_top_level(&path).unwrap_or_else(|| extract_name(&name));
 
         if package.is_empty() {
             continue;
@@ -741,28 +701,19 @@ fn scan_editable(
 }
 
 fn url_to_path(url: &str) -> Option<PathBuf> {
-    assert!(
-        !url.is_empty(),
-        "url must not be empty",
-    );
+    assert!(!url.is_empty(), "url must not be empty",);
 
     let stripped = url.strip_prefix("file://")?;
 
     #[cfg(target_os = "windows")]
-    let raw = stripped
-        .strip_prefix('/')
-        .unwrap_or(stripped);
+    let raw = stripped.strip_prefix('/').unwrap_or(stripped);
 
     #[cfg(not(target_os = "windows"))]
     let raw = stripped;
 
     let path = PathBuf::from(raw);
 
-    if path.is_absolute() {
-        Some(path)
-    } else {
-        None
-    }
+    if path.is_absolute() { Some(path) } else { None }
 }
 
 fn read_top_level(dist_info: &Path) -> Option<String> {
@@ -776,18 +727,11 @@ fn read_top_level(dist_info: &Path) -> Option<String> {
     let content = fs::read_to_string(path).ok()?;
     let name = content.lines().next()?.trim().to_string();
 
-    if name.is_empty() {
-        None
-    } else {
-        Some(name)
-    }
+    if name.is_empty() { None } else { Some(name) }
 }
 
 fn extract_name(directory: &str) -> String {
-    assert!(
-        !directory.is_empty(),
-        "directory must not be empty",
-    );
+    assert!(!directory.is_empty(), "directory must not be empty",);
 
     directory
         .strip_suffix(".dist-info")
@@ -796,21 +740,14 @@ fn extract_name(directory: &str) -> String {
         .to_string()
 }
 
-fn sync_source(
-    source: &VendorSource,
-    vendor: &Path,
-    reporter: &Reporter,
-) -> Result<u32> {
+fn sync_source(source: &VendorSource, vendor: &Path, reporter: &Reporter) -> Result<u32> {
     assert!(
         vendor.is_dir(),
         "vendor must exist before sync: {:?}",
         vendor,
     );
 
-    assert!(
-        !source.name.is_empty(),
-        "source name must not be empty",
-    );
+    assert!(!source.name.is_empty(), "source name must not be empty",);
 
     let mut copied: u32 = 0;
 
@@ -824,8 +761,7 @@ fn sync_source(
             })
             .enumerate()
         {
-            let count = u32::try_from(index)
-                .expect("template index must fit in u32");
+            let count = u32::try_from(index).expect("template index must fit in u32");
 
             assert!(
                 count < TEMPLATES_PER_PACKAGE_MAX,
@@ -841,18 +777,17 @@ fn sync_source(
                 continue;
             }
 
-            if !source
+            if source
                 .extension()
-                .is_some_and(|extension| extension == "html")
+                .is_none_or(|extension| extension != "html")
             {
                 continue;
             }
 
-            let relative =
-                match source.strip_prefix(directory) {
-                    Ok(relative) => relative,
-                    Err(_) => continue,
-                };
+            let relative = match source.strip_prefix(directory) {
+                Ok(relative) => relative,
+                Err(_) => continue,
+            };
 
             let target = vendor.join(relative);
 
@@ -868,22 +803,15 @@ fn sync_source(
     if copied > 0 {
         reporter.info(&format!(
             "  Synced {} templates from '{}'",
-            copied,
-            source.name,
+            copied, source.name,
         ));
     }
 
     Ok(copied)
 }
 
-fn is_source_stale(
-    source: &VendorSource,
-    vendor: &Path,
-) -> Result<bool> {
-    assert!(
-        !source.name.is_empty(),
-        "source name must not be empty",
-    );
+fn is_source_stale(source: &VendorSource, vendor: &Path) -> Result<bool> {
+    assert!(!source.name.is_empty(), "source name must not be empty",);
 
     assert!(
         vendor.is_dir(),
@@ -916,18 +844,17 @@ fn is_source_stale(
                 continue;
             }
 
-            if !source
+            if source
                 .extension()
-                .is_some_and(|extension| extension == "html")
+                .is_none_or(|extension| extension != "html")
             {
                 continue;
             }
 
-            let relative =
-                match source.strip_prefix(directory) {
-                    Ok(relative) => relative,
-                    Err(_) => continue,
-                };
+            let relative = match source.strip_prefix(directory) {
+                Ok(relative) => relative,
+                Err(_) => continue,
+            };
 
             let target = vendor.join(relative);
 
@@ -935,9 +862,7 @@ fn is_source_stale(
                 return Ok(true);
             }
 
-            if fs::metadata(source)?.modified()?
-                > fs::metadata(&target)?.modified()?
-            {
+            if fs::metadata(source)?.modified()? > fs::metadata(&target)?.modified()? {
                 return Ok(true);
             }
         }
@@ -960,8 +885,7 @@ fn count_templates(vendor: &Path) -> u32 {
         .into_iter()
         .enumerate()
     {
-        let walked = u32::try_from(index)
-            .expect("count_templates walk index must fit in u32");
+        let walked = u32::try_from(index).expect("count_templates walk index must fit in u32");
 
         assert!(
             walked <= COUNT_WALK_MAX,

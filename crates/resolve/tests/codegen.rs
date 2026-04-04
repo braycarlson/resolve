@@ -2,7 +2,6 @@ mod common;
 
 use common::compile_simple;
 
-
 #[test]
 fn test_codegen_filter_not_doubled() {
     let template = r#"{{ variable|default:"" }}"#;
@@ -280,7 +279,8 @@ fn test_codegen_comment_block_produces_output() {
 
 #[test]
 fn test_codegen_verbatim_round_trip() {
-    let template = "{% verbatim %}{{ not_a_variable }}{% if fake %}nope{% endif %}{% endverbatim %}";
+    let template =
+        "{% verbatim %}{{ not_a_variable }}{% if fake %}nope{% endif %}{% endverbatim %}";
     let output = compile_simple(template);
 
     assert!(
@@ -360,27 +360,54 @@ fn test_codegen_all_block_type_nodes_produce_output() {
     assert!(output.contains("{% with"), "with tag preserved");
     assert!(output.contains("{% endwith %}"), "endwith tag preserved");
     assert!(output.contains("{% autoescape"), "autoescape tag preserved");
-    assert!(output.contains("{% endautoescape %}"), "endautoescape preserved");
-    assert!(output.contains("{% blocktranslate %}"), "blocktranslate preserved");
-    assert!(output.contains("{% endblocktranslate %}"), "endblocktranslate preserved");
+    assert!(
+        output.contains("{% endautoescape %}"),
+        "endautoescape preserved"
+    );
+    assert!(
+        output.contains("{% blocktranslate %}"),
+        "blocktranslate preserved"
+    );
+    assert!(
+        output.contains("{% endblocktranslate %}"),
+        "endblocktranslate preserved"
+    );
     assert!(output.contains("{% language"), "language preserved");
-    assert!(output.contains("{% endlanguage %}"), "endlanguage preserved");
+    assert!(
+        output.contains("{% endlanguage %}"),
+        "endlanguage preserved"
+    );
     assert!(output.contains("{% filter"), "filter preserved");
     assert!(output.contains("{% endfilter %}"), "endfilter preserved");
     assert!(output.contains("{% cache"), "cache preserved");
     assert!(output.contains("{% endcache %}"), "endcache preserved");
     assert!(output.contains("{% localize"), "localize preserved");
-    assert!(output.contains("{% endlocalize %}"), "endlocalize preserved");
+    assert!(
+        output.contains("{% endlocalize %}"),
+        "endlocalize preserved"
+    );
     assert!(output.contains("{% localtime"), "localtime preserved");
-    assert!(output.contains("{% endlocaltime %}"), "endlocaltime preserved");
+    assert!(
+        output.contains("{% endlocaltime %}"),
+        "endlocaltime preserved"
+    );
     assert!(output.contains("{% spaceless %}"), "spaceless preserved");
-    assert!(output.contains("{% endspaceless %}"), "endspaceless preserved");
+    assert!(
+        output.contains("{% endspaceless %}"),
+        "endspaceless preserved"
+    );
     assert!(output.contains("{% timezone"), "timezone preserved");
-    assert!(output.contains("{% endtimezone %}"), "endtimezone preserved");
+    assert!(
+        output.contains("{% endtimezone %}"),
+        "endtimezone preserved"
+    );
     assert!(output.contains("{% utc %}"), "utc preserved");
     assert!(output.contains("{% endutc %}"), "endutc preserved");
     assert!(output.contains("{% ifchanged %}"), "ifchanged preserved");
-    assert!(output.contains("{% endifchanged %}"), "endifchanged preserved");
+    assert!(
+        output.contains("{% endifchanged %}"),
+        "endifchanged preserved"
+    );
 }
 
 #[test]
@@ -412,8 +439,14 @@ fn test_codegen_standalone_tags_produce_output() {
     assert!(output.contains("{% firstof"), "firstof preserved");
     assert!(output.contains("{% widthratio"), "widthratio preserved");
     assert!(output.contains("{% templatetag"), "templatetag preserved");
-    assert!(output.contains("{% get_static_prefix %}"), "get_static_prefix preserved");
-    assert!(output.contains("{% get_media_prefix %}"), "get_media_prefix preserved");
+    assert!(
+        output.contains("{% get_static_prefix %}"),
+        "get_static_prefix preserved"
+    );
+    assert!(
+        output.contains("{% get_media_prefix %}"),
+        "get_media_prefix preserved"
+    );
     assert!(output.contains("{% lorem"), "lorem preserved");
     assert!(output.contains("{% querystring"), "querystring preserved");
     assert!(output.contains("{% translate"), "translate preserved");

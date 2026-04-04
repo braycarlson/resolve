@@ -4,9 +4,8 @@ use anyhow::Result;
 use rustc_hash::{FxHashMap, FxHashSet};
 use walkdir::WalkDir;
 
-use compiler::ast::AstNode;
 use crate::config::Config;
-
+use compiler::ast::AstNode;
 
 const TEMPLATE_WALK_ENTRIES_MAX: u32 = 500_000;
 const TEMPLATE_COUNT_MAX: u32 = 100_000;
@@ -14,9 +13,7 @@ const DEPENDENCY_EXTRACT_ITERATIONS_MAX: u32 = 500_000;
 const DEPENDENCY_GRAPH_ITERATIONS_MAX: u32 = 500_000;
 const ENTRY_TEMPLATE_ITERATIONS_MAX: u32 = 500_000;
 
-const EXCLUDED_DIRECTORY_SEGMENTS: &[&str] = &[
-    ".venv", ".git", "__pycache__", "node_modules",
-];
+const EXCLUDED_DIRECTORY_SEGMENTS: &[&str] = &[".venv", ".git", "__pycache__", "node_modules"];
 
 #[derive(Debug, Clone)]
 pub struct TemplateIndex {
@@ -118,7 +115,10 @@ impl<'a> TemplateDiscovery<'a> {
                     continue;
                 }
 
-                if !path.extension().is_some_and(|extension| extension == "html") {
+                if path
+                    .extension()
+                    .is_none_or(|extension| extension != "html")
+                {
                     continue;
                 }
 
@@ -127,23 +127,17 @@ impl<'a> TemplateDiscovery<'a> {
                     Err(_) => continue,
                 };
 
-                let name = relative
-                    .to_string_lossy()
-                    .replace('\\', "/");
+                let name = relative.to_string_lossy().replace('\\', "/");
 
                 let full = path.to_path_buf();
 
-                index.path_to_name
-                    .insert(full.clone(), name.clone());
+                index.path_to_name.insert(full.clone(), name.clone());
 
-                index.templates
-                    .entry(name)
-                    .or_insert(full);
+                index.templates.entry(name).or_insert(full);
             }
         }
 
-        let count = u32::try_from(index.templates.len())
-            .expect("template count must fit in u32");
+        let count = u32::try_from(index.templates.len()).expect("template count must fit in u32");
 
         assert!(
             count <= TEMPLATE_COUNT_MAX,
@@ -155,23 +149,17 @@ impl<'a> TemplateDiscovery<'a> {
         Ok(index)
     }
 
-    pub fn dependencies(
-        &self,
-        index: &TemplateIndex,
-    ) -> Result<DependencyGraph> {
-        let count = u32::try_from(index.templates.len())
-            .expect("template count must fit in u32");
+    pub fn dependencies(&self, index: &TemplateIndex) -> Result<DependencyGraph> {
+        let count = u32::try_from(index.templates.len()).expect("template count must fit in u32");
 
         assert!(
             count <= TEMPLATE_COUNT_MAX,
             "template count exceeds maximum for dependency graph",
         );
 
-        let mut dependencies: FxHashMap<String, Vec<Dependency>> =
-            FxHashMap::default();
+        let mut dependencies: FxHashMap<String, Vec<Dependency>> = FxHashMap::default();
 
-        let mut dependents: FxHashMap<String, FxHashSet<String>> =
-            FxHashMap::default();
+        let mut dependents: FxHashMap<String, FxHashSet<String>> = FxHashMap::default();
 
         let mut iterations: u32 = 0;
 
@@ -207,13 +195,8 @@ impl<'a> TemplateDiscovery<'a> {
         })
     }
 
-    pub fn entries(
-        &self,
-        index: &TemplateIndex,
-        graph: &DependencyGraph,
-    ) -> Vec<String> {
-        let count = u32::try_from(index.templates.len())
-            .expect("template count must fit in u32");
+    pub fn entries(&self, index: &TemplateIndex, graph: &DependencyGraph) -> Vec<String> {
+        let count = u32::try_from(index.templates.len()).expect("template count must fit in u32");
 
         assert!(
             count <= TEMPLATE_COUNT_MAX,
@@ -247,13 +230,10 @@ impl<'a> TemplateDiscovery<'a> {
                 let is_vendor = path.starts_with(vendor);
 
                 if is_vendor {
-                    let has_extends = graph
-                        .dependencies
-                        .get(name)
-                        .is_some_and(|deps| {
-                            deps.iter()
-                                .any(|d| matches!(d.r#type, DependencyType::Extends))
-                        });
+                    let has_extends = graph.dependencies.get(name).is_some_and(|deps| {
+                        deps.iter()
+                            .any(|d| matches!(d.r#type, DependencyType::Extends))
+                    });
 
                     if !has_extends {
                         continue;

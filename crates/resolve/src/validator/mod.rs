@@ -3,12 +3,11 @@ pub mod filters;
 
 use anyhow::Result;
 
-use compiler::ast::*;
-use compiler::error::Severity;
 use crate::discovery::TemplateIndex;
 use crate::loader::VendorIndex;
 use crate::reporter::Reporter;
-
+use compiler::ast::*;
+use compiler::error::Severity;
 
 const VALIDATION_NODES_MAX: u32 = 500_000;
 
@@ -26,13 +25,7 @@ impl std::fmt::Display for ValidationError {
             Severity::Warning => "WARNING",
         };
 
-        write!(
-            formatter,
-            "[{}] {}: {}",
-            label,
-            self.template,
-            self.message,
-        )
+        write!(formatter, "[{}] {}: {}", label, self.template, self.message,)
     }
 }
 
@@ -65,8 +58,7 @@ impl Validator {
         entries: &[String],
         reporter: &Reporter,
     ) -> Result<ValidationResult> {
-        let count = u32::try_from(entries.len())
-            .expect("entry_templates length must fit in u32");
+        let count = u32::try_from(entries.len()).expect("entry_templates length must fit in u32");
 
         assert!(
             count <= VALIDATION_NODES_MAX,
@@ -78,12 +70,7 @@ impl Validator {
                 let content = std::fs::read_to_string(path)?;
                 let parsed = compiler::parser::parse(&content)?;
 
-                self.validate_template(
-                    name,
-                    &parsed.nodes,
-                    index,
-                    vendor,
-                );
+                self.validate_template(name, &parsed.nodes, index, vendor);
             }
         }
 
@@ -134,27 +121,15 @@ impl Validator {
                     name,
                 );
 
-                match node {
-                    AstNode::Include(include) => {
-                        if crate::loader::find_in_vendor(
-                            &include.path,
-                            vendor,
-                        )
-                        .is_none()
-                            && !index.templates.contains_key(&include.path)
-                        {
-                            self.errors.push(ValidationError {
-                                template: name.to_string(),
-                                message: format!(
-                                    "Include template not found: {}",
-                                    include.path,
-                                ),
-                                severity: Severity::Error,
-                            });
-                        }
-                    }
-
-                    _ => {}
+                if let AstNode::Include(include) = node
+                    && crate::loader::find_in_vendor(&include.path, vendor).is_none()
+                    && !index.templates.contains_key(&include.path)
+                {
+                    self.errors.push(ValidationError {
+                        template: name.to_string(),
+                        message: format!("Include template not found: {}", include.path),
+                        severity: Severity::Error,
+                    });
                 }
 
                 node.push_child_slices(&mut stack);

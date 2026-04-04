@@ -1,6 +1,5 @@
 use crate::error::LexError;
 
-
 const TOKEN_COUNT_MAX: u32 = 500_000;
 const FILTER_COUNT_MAX: u32 = 100;
 const FILTER_ARGUMENTS_ITERATIONS_MAX: u32 = 10_000;
@@ -171,7 +170,11 @@ impl<'a> Lexer<'a> {
                 assert!(raw.starts_with("{{"), "variable raw must start with {{{{");
                 assert!(raw.ends_with("}}"), "variable raw must end with }}}}");
 
-                return Ok(Some(Token::Variable { raw, expression, filters }));
+                return Ok(Some(Token::Variable {
+                    raw,
+                    expression,
+                    filters,
+                }));
             } else {
                 self.position += 1;
             }
@@ -187,9 +190,7 @@ impl<'a> Lexer<'a> {
         let inner = self.position;
 
         while self.position < self.length {
-            if self.bytes[self.position as usize] == b'%'
-                && self.peek(1) == Some(b'}')
-            {
+            if self.bytes[self.position as usize] == b'%' && self.peek(1) == Some(b'}') {
                 let end = self.position;
                 self.position += 2;
 
@@ -213,10 +214,7 @@ impl<'a> Lexer<'a> {
                     return Ok(Some(Token::BlockEnd { tag, raw }));
                 }
 
-                let tag = content
-                    .split_whitespace()
-                    .next()
-                    .unwrap_or("");
+                let tag = content.split_whitespace().next().unwrap_or("");
 
                 return Ok(Some(Token::BlockStart { raw, tag, content }));
             }
@@ -283,9 +281,7 @@ impl<'a> Lexer<'a> {
         let inner = self.position;
 
         while self.position < self.length {
-            if self.bytes[self.position as usize] == b'#'
-                && self.peek(1) == Some(b'}')
-            {
+            if self.bytes[self.position as usize] == b'#' && self.peek(1) == Some(b'}') {
                 let content = &self.input[inner as usize..self.position as usize];
                 self.position += 2;
 
@@ -326,10 +322,7 @@ impl<'a> Lexer<'a> {
 
         let text = &self.input[start as usize..self.position as usize];
 
-        assert!(
-            !text.is_empty(),
-            "consume_text must produce non-empty text",
-        );
+        assert!(!text.is_empty(), "consume_text must produce non-empty text",);
 
         Ok(Some(Token::Text(text)))
     }
@@ -419,7 +412,7 @@ fn parse_filter<'a>(input: &'a str) -> Option<Filter<'a>> {
     Some(Filter { name, arguments })
 }
 
-fn split_arguments<'a>(input: &'a str) -> Vec<&'a str> {
+fn split_arguments(input: &str) -> Vec<&str> {
     let bytes = input.as_bytes();
     let length = bytes.len();
 

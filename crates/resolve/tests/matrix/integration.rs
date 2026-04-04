@@ -5,10 +5,7 @@ use tempfile::TempDir;
 
 use compiler::ast::AstNode;
 
-use crate::common::{
-    compile_template, count_nodes_of_type, parse, write_template, NodeType,
-};
-
+use crate::common::{NodeType, compile_template, count_nodes_of_type, parse, write_template};
 
 #[test]
 fn test_matrix_integration_fake_dashboard_resolves_inheritance_and_includes() {
@@ -253,12 +250,23 @@ fn test_matrix_integration_missing_include_is_graceful() {
 fn test_matrix_integration_circular_extends_is_graceful() {
     let temp_dir = TempDir::new().unwrap();
 
-    write_template(&temp_dir, "layouts/a.html", r#"{% extends 'layouts/b.html' %}"#);
-    write_template(&temp_dir, "layouts/b.html", r#"{% extends 'layouts/a.html' %}"#);
+    write_template(
+        &temp_dir,
+        "layouts/a.html",
+        r#"{% extends 'layouts/b.html' %}"#,
+    );
+    write_template(
+        &temp_dir,
+        "layouts/b.html",
+        r#"{% extends 'layouts/a.html' %}"#,
+    );
 
     let result = std::panic::catch_unwind(|| compile_template(&temp_dir, "layouts/a.html"));
 
-    assert!(result.is_ok(), "Compiler should not panic on circular extends");
+    assert!(
+        result.is_ok(),
+        "Compiler should not panic on circular extends"
+    );
 }
 
 #[test]
@@ -369,7 +377,11 @@ fn test_matrix_integration_scale_fake_templates() {
     for page_num in 0..40 {
         let output = compile_template(&temp_dir, &format!("pages/page_{}.html", page_num));
 
-        assert!(!output.is_empty(), "page_{}.html should produce output", page_num);
+        assert!(
+            !output.is_empty(),
+            "page_{}.html should produce output",
+            page_num
+        );
         assert!(output.contains("<!DOCTYPE html>"));
         assert!(output.contains(&format!("<h1>Matrix Page {}</h1>", page_num)));
         assert!(!output.contains("{% extends"));

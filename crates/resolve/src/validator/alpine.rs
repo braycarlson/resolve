@@ -1,6 +1,5 @@
 use rustc_hash::FxHashSet;
 
-
 const CORE_DIRECTIVES: &[&str] = &[
     "x-data",
     "x-init",
@@ -124,30 +123,42 @@ pub fn all() -> FxHashSet<String> {
 }
 
 pub fn magic() -> FxHashSet<String> {
-    MAGIC_PROPERTIES.iter().map(|string| string.to_string()).collect()
+    MAGIC_PROPERTIES
+        .iter()
+        .map(|string| string.to_string())
+        .collect()
 }
 
 pub fn events() -> FxHashSet<String> {
-    EVENT_MODIFIERS.iter().map(|string| string.to_string()).collect()
+    EVENT_MODIFIERS
+        .iter()
+        .map(|string| string.to_string())
+        .collect()
 }
 
 pub fn keyboard() -> FxHashSet<String> {
-    KEYBOARD_MODIFIERS.iter().map(|string| string.to_string()).collect()
+    KEYBOARD_MODIFIERS
+        .iter()
+        .map(|string| string.to_string())
+        .collect()
 }
 
 pub fn model() -> FxHashSet<String> {
-    MODEL_MODIFIERS.iter().map(|string| string.to_string()).collect()
+    MODEL_MODIFIERS
+        .iter()
+        .map(|string| string.to_string())
+        .collect()
 }
 
 pub fn transitions() -> FxHashSet<String> {
-    TRANSITION_MODIFIERS.iter().map(|string| string.to_string()).collect()
+    TRANSITION_MODIFIERS
+        .iter()
+        .map(|string| string.to_string())
+        .collect()
 }
 
 pub fn validate_directive(directive: &str) -> Result<(), String> {
-    assert!(
-        !directive.is_empty(),
-        "directive must not be empty",
-    );
+    assert!(!directive.is_empty(), "directive must not be empty",);
 
     let directives = all();
 
@@ -169,10 +180,7 @@ pub fn validate_directive(directive: &str) -> Result<(), String> {
 }
 
 pub fn validate_magic_property(property: &str) -> Result<(), String> {
-    assert!(
-        !property.is_empty(),
-        "property must not be empty",
-    );
+    assert!(!property.is_empty(), "property must not be empty",);
 
     let properties = magic();
 
@@ -184,10 +192,7 @@ pub fn validate_magic_property(property: &str) -> Result<(), String> {
 }
 
 pub fn validate_modifiers(content: &str) -> Vec<String> {
-    assert!(
-        !content.is_empty(),
-        "content must not be empty",
-    );
+    assert!(!content.is_empty(), "content must not be empty",);
 
     let mut errors = Vec::new();
 

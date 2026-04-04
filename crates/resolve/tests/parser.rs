@@ -4,7 +4,6 @@ use compiler::ast::AstNode;
 
 use common::parse;
 
-
 #[test]
 fn test_parser_simple_variable() {
     let ast = parse("{{ variable }}").unwrap();
@@ -238,10 +237,7 @@ fn test_parser_for_tuple_unpacking() {
 
 #[test]
 fn test_parser_for_with_custom_filter() {
-    let ast = parse(
-        "{% for key, value in data|safe_dict_items %}{{ key }}{% endfor %}",
-    )
-    .unwrap();
+    let ast = parse("{% for key, value in data|safe_dict_items %}{{ key }}{% endfor %}").unwrap();
 
     match &ast[0] {
         AstNode::For(f) => {
@@ -299,16 +295,14 @@ fn test_parser_csrf_token() {
 
 #[test]
 fn test_parser_comment_block() {
-    let ast =
-        parse("{% comment %}This is hidden{% endcomment %}").unwrap();
+    let ast = parse("{% comment %}This is hidden{% endcomment %}").unwrap();
 
     assert!(matches!(ast[0], AstNode::CommentBlock(_)));
 }
 
 #[test]
 fn test_parser_autoescape() {
-    let ast =
-        parse("{% autoescape off %}{{ content }}{% endautoescape %}").unwrap();
+    let ast = parse("{% autoescape off %}{{ content }}{% endautoescape %}").unwrap();
 
     assert!(matches!(ast[0], AstNode::Autoescape(_)));
 }
@@ -317,9 +311,10 @@ fn test_parser_autoescape() {
 fn test_parser_blocktranslate() {
     let ast = parse("{% blocktranslate %}Hello{% endblocktranslate %}").unwrap();
 
-    assert!(ast
-        .iter()
-        .any(|n| matches!(n, AstNode::Block(_) | AstNode::Blocktranslate(_))));
+    assert!(
+        ast.iter()
+            .any(|n| matches!(n, AstNode::Block(_) | AstNode::Blocktranslate(_)))
+    );
 }
 
 #[test]
@@ -447,9 +442,21 @@ fn test_parser_regroup_fields() {
     let ast = parse("{% regroup people by gender as gender_list %}").unwrap();
 
     if let AstNode::Regroup(rg) = &ast[0] {
-        assert_eq!(rg.list, "people", "list should be 'people', got '{}'", rg.list);
-        assert_eq!(rg.field, "gender", "field should be 'gender', got '{}'", rg.field);
-        assert_eq!(rg.as_variable, "gender_list", "as_variable should be 'gender_list', got '{}'", rg.as_variable);
+        assert_eq!(
+            rg.list, "people",
+            "list should be 'people', got '{}'",
+            rg.list
+        );
+        assert_eq!(
+            rg.field, "gender",
+            "field should be 'gender', got '{}'",
+            rg.field
+        );
+        assert_eq!(
+            rg.as_variable, "gender_list",
+            "as_variable should be 'gender_list', got '{}'",
+            rg.as_variable
+        );
     } else {
         panic!("Expected Regroup node");
     }
@@ -687,11 +694,7 @@ fn test_parser_mismatched_end_tag_reports_correct_tags() {
                 "Expected tag should be 'if'. Got: '{}'",
                 expected,
             );
-            assert_eq!(
-                got, "for",
-                "Got tag should be 'for'. Got: '{}'",
-                got,
-            );
+            assert_eq!(got, "for", "Got tag should be 'for'. Got: '{}'", got,);
         }
         Err(compiler::error::ParseError::UnclosedBlock { tag }) => {
             assert_eq!(
@@ -733,12 +736,10 @@ fn test_parser_include_with_only_flag() {
     match &ast[0] {
         AstNode::Include(i) => {
             assert_eq!(i.path, "partial.html");
-            assert!(
-                i.only,
-                "Include with 'only' keyword must set only=true",
-            );
+            assert!(i.only, "Include with 'only' keyword must set only=true",);
             assert_eq!(
-                i.with_variables.len(), 1,
+                i.with_variables.len(),
+                1,
                 "Should have exactly one binding when 'with key=value only'",
             );
             assert_eq!(i.with_variables[0].name, "key");
@@ -755,10 +756,7 @@ fn test_parser_include_only_without_with_vars() {
     match &ast[0] {
         AstNode::Include(i) => {
             assert_eq!(i.path, "partial.html");
-            assert!(
-                i.only,
-                "Include with bare 'only' must set only=true",
-            );
+            assert!(i.only, "Include with bare 'only' must set only=true",);
             assert!(
                 i.with_variables.is_empty(),
                 "Bare 'only' without 'with' should produce no bindings",
@@ -778,7 +776,8 @@ fn test_parser_with_multiple_bindings_with_filter_chains() {
     match &ast[0] {
         AstNode::With(w) => {
             assert_eq!(
-                w.bindings.len(), 3,
+                w.bindings.len(),
+                3,
                 "Should parse three bindings. Got: {}",
                 w.bindings.len(),
             );
@@ -815,9 +814,9 @@ fn test_parser_content_before_extends_produces_nodes() {
     )
     .unwrap();
 
-    let has_text = ast.iter().any(|n| {
-        matches!(n, AstNode::Text(t) if t.content.contains("Orphan content"))
-    });
+    let has_text = ast
+        .iter()
+        .any(|n| matches!(n, AstNode::Text(t) if t.content.contains("Orphan content")));
     let has_extends = ast.iter().any(|n| matches!(n, AstNode::Extends(_)));
     let has_block = ast.iter().any(|n| matches!(n, AstNode::Block(_)));
 
@@ -825,14 +824,8 @@ fn test_parser_content_before_extends_produces_nodes() {
         has_text,
         "Parser must emit Text node for content before extends",
     );
-    assert!(
-        has_extends,
-        "Parser must emit Extends node",
-    );
-    assert!(
-        has_block,
-        "Parser must emit Block node",
-    );
+    assert!(has_extends, "Parser must emit Extends node",);
+    assert!(has_block, "Parser must emit Block node",);
 
     let extends_idx = ast
         .iter()
@@ -840,9 +833,7 @@ fn test_parser_content_before_extends_produces_nodes() {
         .unwrap();
     let text_idx = ast
         .iter()
-        .position(|n| {
-            matches!(n, AstNode::Text(t) if t.content.contains("Orphan content"))
-        })
+        .position(|n| matches!(n, AstNode::Text(t) if t.content.contains("Orphan content")))
         .unwrap();
 
     assert!(
@@ -870,9 +861,10 @@ fn test_parser_nesting_depth_at_boundary() {
 
     match result {
         Ok(output) => {
-            let has_error_diagnostic = output.diagnostics.iter().any(|d| {
-                d.severity == compiler::error::Severity::Error
-            });
+            let has_error_diagnostic = output
+                .diagnostics
+                .iter()
+                .any(|d| d.severity == compiler::error::Severity::Error);
 
             assert!(
                 has_error_diagnostic || !output.nodes.is_empty(),
