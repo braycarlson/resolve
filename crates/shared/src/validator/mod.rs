@@ -7,7 +7,6 @@ use anyhow::Result;
 
 use crate::discovery::TemplateIndex;
 use crate::loader::VendorIndex;
-use crate::reporter::Reporter;
 use compiler::ast::*;
 use compiler::error::Severity;
 
@@ -32,12 +31,12 @@ impl std::fmt::Display for ValidationError {
 }
 
 pub struct ValidationResult {
+    pub errors: Vec<String>,
     pub warnings: Vec<String>,
-    pub error_count: usize,
 }
 
 pub struct Validator {
-    errors: Vec<ValidationError>,
+    issues: Vec<ValidationError>,
 }
 
 impl Default for Validator {
@@ -49,7 +48,7 @@ impl Default for Validator {
 impl Validator {
     pub fn new() -> Self {
         Self {
-            errors: Vec::with_capacity(32),
+            issues: Vec::with_capacity(32),
         }
     }
 
@@ -59,7 +58,6 @@ impl Validator {
         vendor: &VendorIndex,
         entries: &[String],
         vendor_path: &Path,
-        reporter: &Reporter,
     ) -> Result<ValidationResult> {
         let count = u32::try_from(entries.len()).expect("entry_templates length must fit in u32");
 
@@ -79,25 +77,17 @@ impl Validator {
             }
         }
 
+        let mut errors = Vec::new();
         let mut warnings = Vec::new();
-        let mut errors: usize = 0;
 
-        for error in &self.errors {
-            match error.severity {
-                Severity::Error => {
-                    reporter.error(&error.to_string());
-                    errors += 1;
-                }
-                Severity::Warning => {
-                    warnings.push(error.to_string());
-                }
+        for issue in &self.issues {
+            match issue.severity {
+                Severity::Error => errors.push(issue.to_string()),
+                Severity::Warning => warnings.push(issue.to_string()),
             }
         }
 
-        Ok(ValidationResult {
-            warnings,
-            error_count: errors,
-        })
+        Ok(ValidationResult { errors, warnings })
     }
 
     fn validate_template(
@@ -137,7 +127,7 @@ impl Validator {
                     && crate::loader::find_in_vendor(&extends.parent_path, vendor).is_none()
                     && !index.templates.contains_key(&extends.parent_path)
                 {
-                    self.errors.push(ValidationError {
+                    self.issues.push(ValidationError {
                         template: name.to_string(),
                         message: format!("Parent template not found: {}", extends.parent_path),
                         severity,
@@ -148,7 +138,7 @@ impl Validator {
                     && crate::loader::find_in_vendor(&include.path, vendor).is_none()
                     && !index.templates.contains_key(&include.path)
                 {
-                    self.errors.push(ValidationError {
+                    self.issues.push(ValidationError {
                         template: name.to_string(),
                         message: format!("Include template not found: {}", include.path),
                         severity,

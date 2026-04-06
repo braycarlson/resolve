@@ -232,19 +232,24 @@ impl<'a> Compiler<'a> {
         let discovery = TemplateDiscovery::new(self.config);
         let index = discovery.scan()?;
         let graph = discovery.dependencies(&index)?;
+
         let entries = discovery.entries(&index, &graph);
         let vendor = VendorIndex::build(self.config.vendor_path());
 
         let mut validator = Validator::new();
 
-        let result = validator.validate(&index, &vendor, &entries, self.config.vendor_path(), self.reporter)?;
+        let result = validator.validate(&index, &vendor, &entries, self.config.vendor_path())?;
 
-        if result.error_count > 0 {
-            return Err(anyhow::anyhow!("Validation failed"));
+        for error in &result.errors {
+            self.reporter.error(error);
         }
 
         for warning in &result.warnings {
             self.reporter.warn(warning);
+        }
+
+        if !result.errors.is_empty() {
+            return Err(anyhow::anyhow!("Validation failed"));
         }
 
         Ok(())

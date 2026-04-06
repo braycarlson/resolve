@@ -65,17 +65,21 @@ fn run() -> Result<()> {
     ));
 
     let mut validator = Validator::new();
-    let result = validator.validate(&index, &vendor, &entries, config.vendor_path(), &reporter)?;
+    let result = validator.validate(&index, &vendor, &entries, config.vendor_path())?;
+
+    for error in &result.errors {
+        reporter.error(error);
+    }
 
     for warning in &result.warnings {
         reporter.warn(warning);
     }
 
-    if result.error_count > 0 {
+    if !result.errors.is_empty() {
         reporter.info(&format!(
             "\nValidation failed: {} error{}",
-            result.error_count,
-            if result.error_count == 1 { "" } else { "s" },
+            result.errors.len(),
+            if result.errors.len() == 1 { "" } else { "s" },
         ));
 
         process::exit(1);
