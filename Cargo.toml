@@ -2,8 +2,9 @@
 members = [
     "crates/bindings",
     "crates/compiler",
-    "crates/resolve",
     "crates/lint",
+    "crates/resolve",
+    "crates/shared",
 ]
 default-members = ["crates/resolve"]
 resolver = "2"
