@@ -13,7 +13,7 @@ use shared::validator::Validator;
 const DEFAULT_CONFIG_FILE: &str = "resolve.toml";
 
 #[derive(Parser)]
-#[command(name = "resolve-lint")]
+#[command(name = "lint")]
 #[command(about = "Lint Django templates for broken extends and includes")]
 #[command(version)]
 struct Cli {
