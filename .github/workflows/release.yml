@@ -16,7 +16,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - run: cargo build --release --package resolve-lint
+      - run: cargo build --release --package lint
 
       - name: Upload binary
         uses: softprops/action-gh-release@v2
