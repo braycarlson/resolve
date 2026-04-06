@@ -50,6 +50,8 @@ fn run() -> Result<()> {
     let reporter = Reporter::console(verbosity);
     let config = resolve_config(&cli, &reporter)?;
 
+    sync_vendor(&config, &reporter)?;
+
     let discovery = TemplateDiscovery::new(&config);
     let index = discovery.scan()?;
     let graph = discovery.dependencies(&index)?;
@@ -80,6 +82,24 @@ fn run() -> Result<()> {
     }
 
     reporter.info("Validation passed.");
+
+    Ok(())
+}
+
+fn sync_vendor(config: &Config, reporter: &Reporter) -> Result<()> {
+    let manager = resolve::vendor::VendorManager::new(config, reporter);
+
+    if !manager.vendor_exists() || manager.is_vendor_stale()? {
+        let count = manager.sync()?;
+
+        reporter.info(&format!(
+            "Vendor: {} template{} synced",
+            count,
+            if count == 1 { "" } else { "s" },
+        ));
+    } else {
+        reporter.debug("Vendor templates are up to date");
+    }
 
     Ok(())
 }
