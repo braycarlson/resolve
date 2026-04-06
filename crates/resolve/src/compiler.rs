@@ -237,7 +237,7 @@ impl<'a> Compiler<'a> {
 
         let mut validator = Validator::new();
 
-        let result = validator.validate(&index, &vendor, &entries, self.reporter)?;
+        let result = validator.validate(&index, &vendor, &entries, self.config.vendor_path(), self.reporter)?;
 
         if result.error_count > 0 {
             return Err(anyhow::anyhow!("Validation failed"));

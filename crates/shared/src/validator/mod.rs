@@ -1,6 +1,8 @@
 pub mod alpine;
 pub mod filters;
 
+use std::path::Path;
+
 use anyhow::Result;
 
 use crate::discovery::TemplateIndex;
@@ -8,7 +10,6 @@ use crate::loader::VendorIndex;
 use crate::reporter::Reporter;
 use compiler::ast::*;
 use compiler::error::Severity;
-
 
 const VALIDATION_NODES_MAX: u32 = 500_000;
 
@@ -57,6 +58,7 @@ impl Validator {
         index: &TemplateIndex,
         vendor: &VendorIndex,
         entries: &[String],
+        vendor_path: &Path,
         reporter: &Reporter,
     ) -> Result<ValidationResult> {
         let count = u32::try_from(entries.len()).expect("entry_templates length must fit in u32");
@@ -71,7 +73,9 @@ impl Validator {
                 let content = std::fs::read_to_string(path)?;
                 let parsed = compiler::parser::parse(&content)?;
 
-                self.validate_template(name, &parsed.nodes, index, vendor);
+                let is_vendor = path.starts_with(vendor_path);
+
+                self.validate_template(name, &parsed.nodes, index, vendor, is_vendor);
             }
         }
 
@@ -102,11 +106,18 @@ impl Validator {
         nodes: &[AstNode],
         index: &TemplateIndex,
         vendor: &VendorIndex,
+        is_vendor: bool,
     ) {
         assert!(
             !name.is_empty(),
             "template_name must not be empty for validation",
         );
+
+        let severity = if is_vendor {
+            Severity::Warning
+        } else {
+            Severity::Error
+        };
 
         let mut stack: Vec<&[AstNode]> = vec![nodes];
         let mut iterations: u32 = 0;
@@ -129,7 +140,7 @@ impl Validator {
                     self.errors.push(ValidationError {
                         template: name.to_string(),
                         message: format!("Parent template not found: {}", extends.parent_path),
-                        severity: Severity::Error,
+                        severity,
                     });
                 }
 
@@ -140,7 +151,7 @@ impl Validator {
                     self.errors.push(ValidationError {
                         template: name.to_string(),
                         message: format!("Include template not found: {}", include.path),
-                        severity: Severity::Error,
+                        severity,
                     });
                 }
 

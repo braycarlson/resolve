@@ -65,7 +65,7 @@ fn run() -> Result<()> {
     ));
 
     let mut validator = Validator::new();
-    let result = validator.validate(&index, &vendor, &entries, &reporter)?;
+    let result = validator.validate(&index, &vendor, &entries, config.vendor_path(), &reporter)?;
 
     for warning in &result.warnings {
         reporter.warn(warning);
