@@ -72,7 +72,7 @@ fn run() -> Result<()> {
     }
 
     if result.error_count > 0 {
-        reporter.error(&format!(
+        reporter.info(&format!(
             "\nValidation failed: {} error{}",
             result.error_count,
             if result.error_count == 1 { "" } else { "s" },
