@@ -9,6 +9,7 @@ use crate::reporter::Reporter;
 use compiler::ast::*;
 use compiler::error::Severity;
 
+
 const VALIDATION_NODES_MAX: u32 = 500_000;
 
 #[derive(Debug, Clone)]
@@ -120,6 +121,17 @@ impl Validator {
                     VALIDATION_NODES_MAX,
                     name,
                 );
+
+                if let AstNode::Extends(extends) = node
+                    && crate::loader::find_in_vendor(&extends.parent_path, vendor).is_none()
+                    && !index.templates.contains_key(&extends.parent_path)
+                {
+                    self.errors.push(ValidationError {
+                        template: name.to_string(),
+                        message: format!("Parent template not found: {}", extends.parent_path),
+                        severity: Severity::Error,
+                    });
+                }
 
                 if let AstNode::Include(include) = node
                     && crate::loader::find_in_vendor(&include.path, vendor).is_none()

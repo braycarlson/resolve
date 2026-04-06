@@ -33,4 +33,4 @@ deploy: ensure-venv ensure-maturin
     cargo build --release
     {{maturin}} build --profile release-python --manifest-path crates\bindings\Cargo.toml --interpreter {{python}}
     uv pip install --reinstall --no-cache --find-links target\wheels --python {{interpreter}} django-resolve
-    set "VIRTUAL_ENV=" && .\target\release\resolve.exe --project {{project}} compile
+    set "VIRTUAL_ENV=" && .\target\release\resolve.exe --project {{project}} --verbose compile

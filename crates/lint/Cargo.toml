@@ -1,0 +1,12 @@
+[package]
+name = "resolve-lint"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+shared = { path = "../shared" }
+clap = { version = "4.6", features = ["derive"] }
+anyhow = "1.0.102"
+
+[lints]
+workspace = true

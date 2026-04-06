@@ -530,9 +530,9 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "shared",
  "tempfile",
  "thiserror",
- "toml",
  "walkdir",
 ]
 
@@ -631,6 +631,19 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "shared"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "compiler",
+ "rustc-hash",
+ "serde",
+ "thiserror",
+ "toml",
+ "walkdir",
 ]
 
 [[package]]

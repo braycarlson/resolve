@@ -1,0 +1,16 @@
+[package]
+name = "shared"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+compiler = { path = "../compiler" }
+rustc-hash = "2.1.2"
+serde = { version = "1.0.228", features = ["derive"] }
+toml = "1.1.1"
+walkdir = "2.5.0"
+thiserror = "2.0.18"
+anyhow = "1.0.102"
+
+[lints]
+workspace = true

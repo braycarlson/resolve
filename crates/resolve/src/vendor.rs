@@ -8,6 +8,7 @@ use rustc_hash::FxHashSet;
 use walkdir::WalkDir;
 
 const VIRTUAL_ENVIRONMENT_PROBE_NAMES: &[&str] = &[".venv", "venv"];
+const MANIFEST_FILE: &str = ".resolve_manifest";
 
 const SITE_PACKAGES_ENTRIES_MAX: u32 = 10_000;
 const TEMPLATES_PER_PACKAGE_MAX: u32 = 50_000;
@@ -57,6 +58,22 @@ impl<'a> VendorManager<'a> {
             return Ok(false);
         }
 
+        let current: FxHashSet<String> = sources
+            .iter()
+            .map(|source| source.name.clone())
+            .collect();
+
+        match read_manifest(path) {
+            Some(previous) => {
+                if previous != current {
+                    return Ok(true);
+                }
+            }
+            None => {
+                return Ok(true);
+            }
+        }
+
         for source in &sources {
             if is_source_stale(source, path)? {
                 return Ok(true);
@@ -101,6 +118,7 @@ impl<'a> VendorManager<'a> {
         if sources.is_empty() {
             self.reporter
                 .debug("No vendor packages with templates found");
+
             return Ok(0);
         }
 
@@ -113,6 +131,8 @@ impl<'a> VendorManager<'a> {
         }
 
         assert!(path.exists(), "vendor directory must exist after sync",);
+
+        write_manifest(path, &sources)?;
 
         Ok(copied)
     }
@@ -175,15 +195,6 @@ fn find_environment(
         "template_directories must not be empty for venv search",
     );
 
-    if let Ok(value) = std::env::var("VIRTUAL_ENV") {
-        let path = PathBuf::from(&value);
-
-        if path.is_dir() {
-            reporter.debug(&format!("Using VIRTUAL_ENV: {:?}", path));
-            return Some(path);
-        }
-    }
-
     if let Some(ref path) = config.virtual_environment_path {
         if path.is_dir() {
             reporter.debug(&format!(
@@ -197,6 +208,15 @@ fn find_environment(
             "Configured virtual_environment_path does not exist: {:?}",
             path,
         ));
+    }
+
+    if let Ok(value) = std::env::var("VIRTUAL_ENV") {
+        let path = PathBuf::from(&value);
+
+        if path.is_dir() {
+            reporter.debug(&format!("Using VIRTUAL_ENV: {:?}", path));
+            return Some(path);
+        }
     }
 
     for name in VIRTUAL_ENVIRONMENT_PROBE_NAMES {
@@ -908,6 +928,50 @@ fn count_templates(vendor: &Path) -> u32 {
     }
 
     count
+}
+
+fn write_manifest(vendor: &Path, sources: &[VendorSource]) -> Result<()> {
+    assert!(
+        vendor.is_dir(),
+        "vendor must be a directory for write_manifest: {:?}",
+        vendor,
+    );
+
+    let mut names: Vec<&str> = sources.iter().map(|source| source.name.as_str()).collect();
+
+    names.sort();
+
+    let content = names.join("\n");
+    let path = vendor.join(MANIFEST_FILE);
+
+    std::fs::write(&path, content)?;
+
+    assert!(
+        path.exists(),
+        "manifest file must exist after write: {:?}",
+        path,
+    );
+
+    Ok(())
+}
+
+fn read_manifest(vendor: &Path) -> Option<FxHashSet<String>> {
+    assert!(
+        vendor.is_dir(),
+        "vendor must be a directory for read_manifest: {:?}",
+        vendor,
+    );
+
+    let path = vendor.join(MANIFEST_FILE);
+    let content = fs::read_to_string(&path).ok()?;
+
+    let names: FxHashSet<String> = content
+        .lines()
+        .map(|line| line.trim().to_string())
+        .filter(|line| !line.is_empty())
+        .collect();
+
+    Some(names)
 }
 
 pub fn sync(config: &Config, reporter: &Reporter) -> Result<()> {

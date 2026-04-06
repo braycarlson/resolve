@@ -405,16 +405,16 @@ fn discover_environment(project: &Path) -> Option<PathBuf> {
         project,
     );
 
-    if let Ok(value) = std::env::var("VIRTUAL_ENV") {
-        let path = PathBuf::from(&value);
+    for name in VENV_PROBE_NAMES {
+        let path = project.join(name);
 
         if path.is_dir() {
             return Some(path);
         }
     }
 
-    for name in VENV_PROBE_NAMES {
-        let path = project.join(name);
+    if let Ok(value) = std::env::var("VIRTUAL_ENV") {
+        let path = PathBuf::from(&value);
 
         if path.is_dir() {
             return Some(path);
