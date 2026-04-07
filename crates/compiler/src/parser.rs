@@ -481,11 +481,9 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_extends(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
-        let path = content
-            .trim_start_matches("extends")
-            .trim()
-            .trim_matches('\'')
-            .trim_matches('"');
+        let trimmed = content.trim_start_matches("extends").trim();
+        let is_literal = trimmed.starts_with('\'') || trimmed.starts_with('"');
+        let path = trimmed.trim_matches('\'').trim_matches('"');
 
         if path.is_empty() {
             self.error(
@@ -497,12 +495,15 @@ impl<'a> Parser<'a> {
         Ok(Some(AstNode::Extends(ExtendsNode {
             raw: raw.to_string(),
             parent_path: path.to_string(),
+            is_literal,
         })))
     }
 
     fn parse_include(&mut self, content: &str, raw: &str) -> Result<Option<AstNode>, ParseError> {
         let remainder = content.trim_start_matches("include").trim();
         let (segment, remainder) = split_path(remainder);
+
+        let is_literal = segment.starts_with('\'') || segment.starts_with('"');
 
         let path = segment.trim_matches('\'').trim_matches('"');
 
@@ -543,6 +544,7 @@ impl<'a> Parser<'a> {
             path: path.to_string(),
             with_variables,
             only,
+            is_literal,
         }))))
     }
 

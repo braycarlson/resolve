@@ -124,6 +124,7 @@ impl Validator {
                 );
 
                 if let AstNode::Extends(extends) = node
+                    && extends.is_literal
                     && crate::loader::find_in_vendor(&extends.parent_path, vendor).is_none()
                     && !index.templates.contains_key(&extends.parent_path)
                 {
@@ -135,6 +136,7 @@ impl Validator {
                 }
 
                 if let AstNode::Include(include) = node
+                    && include.is_literal
                     && crate::loader::find_in_vendor(&include.path, vendor).is_none()
                     && !index.templates.contains_key(&include.path)
                 {

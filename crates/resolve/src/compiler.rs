@@ -241,11 +241,11 @@ impl<'a> Compiler<'a> {
         let result = validator.validate(&index, &vendor, &entries, self.config.vendor_path())?;
 
         for error in &result.errors {
-            self.reporter.error(error);
+            self.reporter.info(error);
         }
 
         for warning in &result.warnings {
-            self.reporter.warn(warning);
+            self.reporter.info(warning);
         }
 
         if !result.errors.is_empty() {

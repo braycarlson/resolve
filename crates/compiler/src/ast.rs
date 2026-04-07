@@ -311,6 +311,7 @@ pub struct BlockNode {
 pub struct ExtendsNode {
     pub raw: String,
     pub parent_path: String,
+    pub is_literal: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -319,6 +320,7 @@ pub struct IncludeNode {
     pub path: String,
     pub with_variables: Vec<Binding>,
     pub only: bool,
+    pub is_literal: bool,
 }
 
 #[derive(Debug, Clone)]

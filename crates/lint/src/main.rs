@@ -68,11 +68,11 @@ fn run() -> Result<()> {
     let result = validator.validate(&index, &vendor, &entries, config.vendor_path())?;
 
     for error in &result.errors {
-        reporter.error(error);
+        reporter.info(error);
     }
 
     for warning in &result.warnings {
-        reporter.warn(warning);
+        reporter.info(warning);
     }
 
     if !result.errors.is_empty() {
