@@ -13,7 +13,7 @@ const DEPENDENCY_EXTRACT_ITERATIONS_MAX: u32 = 500_000;
 const DEPENDENCY_GRAPH_ITERATIONS_MAX: u32 = 500_000;
 const ENTRY_TEMPLATE_ITERATIONS_MAX: u32 = 500_000;
 
-const EXCLUDED_DIRECTORY_SEGMENTS: &[&str] = &[".venv", ".git", "__pycache__", "node_modules"];
+const EXCLUDED_DIRECTORY_SEGMENTS: &[&str] = &[".venv", ".git", "__pycache__", "docs", "node_modules"];
 
 #[derive(Debug, Clone)]
 pub struct TemplateIndex {

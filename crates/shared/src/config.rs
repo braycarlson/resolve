@@ -20,6 +20,7 @@ const EXCLUDED_DIRECTORY_SEGMENTS: &[&str] = &[
     ".resolve_cache",
     ".resolve_vendor",
     "__pycache__",
+    "docs",
     "resolve_templates",
     "node_modules",
     "static",
