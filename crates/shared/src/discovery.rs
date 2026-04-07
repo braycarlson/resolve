@@ -7,13 +7,21 @@ use walkdir::WalkDir;
 use crate::config::Config;
 use compiler::ast::AstNode;
 
+
 const TEMPLATE_WALK_ENTRIES_MAX: u32 = 500_000;
 const TEMPLATE_COUNT_MAX: u32 = 100_000;
 const DEPENDENCY_EXTRACT_ITERATIONS_MAX: u32 = 500_000;
 const DEPENDENCY_GRAPH_ITERATIONS_MAX: u32 = 500_000;
 const ENTRY_TEMPLATE_ITERATIONS_MAX: u32 = 500_000;
 
-const EXCLUDED_DIRECTORY_SEGMENTS: &[&str] = &[".venv", ".git", "__pycache__", "docs", "node_modules"];
+const EXCLUDED_DIRECTORY_SEGMENTS: &[&str] = &[
+    ".venv",
+    ".git",
+    "__pycache__",
+    "docs",
+    "node_modules",
+    "test_project",
+];
 
 #[derive(Debug, Clone)]
 pub struct TemplateIndex {

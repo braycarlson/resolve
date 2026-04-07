@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use walkdir::WalkDir;
 
+
 const DEFAULT_OUTPUT_DIRECTORY: &str = "resolve_templates";
 const DEFAULT_CACHE_DIRECTORY: &str = ".resolve_cache";
 const DEFAULT_VENDOR_DIRECTORY: &str = ".resolve_vendor";
@@ -24,6 +25,7 @@ const EXCLUDED_DIRECTORY_SEGMENTS: &[&str] = &[
     "resolve_templates",
     "node_modules",
     "static",
+    "test_project",
     "venv",
 ];
 
