@@ -588,7 +588,7 @@ impl<'a> Compiler<'a> {
             .filter(|(name, _)| !output.join(name).exists())
             .collect();
 
-        to_copy.sort_by(|(a, _), (b, _)| a.cmp(b));
+        to_copy.sort_by_key(|(name, _)| *name);
 
         let mut copied: u32 = 0;
         let mut iterations: u32 = 0;

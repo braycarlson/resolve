@@ -184,10 +184,10 @@ fn test_integration_nested_loops_and_conditionals() {
                         return true;
                     }
                 }
-                if let Some(else_branch) = &if_node.else_branch {
-                    if has_if_in_for(else_branch) {
-                        return true;
-                    }
+                if let Some(else_branch) = &if_node.else_branch
+                    && has_if_in_for(else_branch)
+                {
+                    return true;
                 }
             }
         }
