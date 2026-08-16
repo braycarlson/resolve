@@ -1,7 +1,7 @@
 <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/braycarlson/resolve/main/assets/resolve-logo-transparent-violet.svg">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/braycarlson/resolve/main/assets/resolve-logo-transparent-light.svg">
     <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/braycarlson/resolve/main/assets/resolve-logo-transparent-ink.svg">
-    <img alt="resolve" src="https://raw.githubusercontent.com/braycarlson/resolve/main/assets/resolve-logo-transparent-violet.svg" width="500">
+    <img alt="resolve" src="https://raw.githubusercontent.com/braycarlson/resolve/main/assets/resolve-logo-transparent-light.svg" width="500">
 </picture>
 
 &nbsp;
