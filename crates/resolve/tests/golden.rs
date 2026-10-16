@@ -74,7 +74,7 @@ fn golden(name: &str, actual: &str) {
     }
 
     let expected = fs::read_to_string(&path)
-        .unwrap_or_else(|_| panic!("{} is present; bless with {BLESS}", path.display()));
+        .unwrap_or_else(|_| panic!("{} is missing; bless with {BLESS}", path.display()));
 
     assert_eq!(actual, expected, "{name} differs; bless with {BLESS}");
 }
