@@ -5,6 +5,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use walkdir::WalkDir;
 
 use crate::config::Config;
+use crate::loader::MANIFEST_FILE;
 use compiler::ast::AstNode;
 
 
@@ -123,10 +124,7 @@ impl<'a> TemplateDiscovery<'a> {
                     continue;
                 }
 
-                if path
-                    .extension()
-                    .is_none_or(|extension| extension != "html")
-                {
+                if entry.file_name() == MANIFEST_FILE {
                     continue;
                 }
 
@@ -225,6 +223,13 @@ impl<'a> TemplateDiscovery<'a> {
                     "entries exceeded {} iterations",
                     ENTRY_TEMPLATE_ITERATIONS_MAX,
                 );
+
+                if path
+                    .extension()
+                    .is_none_or(|extension| extension != "html")
+                {
+                    continue;
+                }
 
                 let depended = graph
                     .dependents

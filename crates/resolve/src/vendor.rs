@@ -2,13 +2,13 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::config::Config;
+use crate::loader::MANIFEST_FILE;
 use crate::reporter::Reporter;
 use anyhow::{Context, Result};
 use rustc_hash::FxHashSet;
 use walkdir::WalkDir;
 
 const VIRTUAL_ENVIRONMENT_PROBE_NAMES: &[&str] = &[".venv", "venv"];
-const MANIFEST_FILE: &str = ".resolve_manifest";
 
 const SITE_PACKAGES_ENTRIES_MAX: u32 = 10_000;
 const TEMPLATES_PER_PACKAGE_MAX: u32 = 50_000;
@@ -797,13 +797,6 @@ fn sync_source(source: &VendorSource, vendor: &Path, reporter: &Reporter) -> Res
                 continue;
             }
 
-            if source
-                .extension()
-                .is_none_or(|extension| extension != "html")
-            {
-                continue;
-            }
-
             let relative = match source.strip_prefix(directory) {
                 Ok(relative) => relative,
                 Err(_) => continue,
@@ -864,13 +857,6 @@ fn is_source_stale(source: &VendorSource, vendor: &Path) -> Result<bool> {
                 continue;
             }
 
-            if source
-                .extension()
-                .is_none_or(|extension| extension != "html")
-            {
-                continue;
-            }
-
             let relative = match source.strip_prefix(directory) {
                 Ok(relative) => relative,
                 Err(_) => continue,
@@ -918,11 +904,7 @@ fn count_templates(vendor: &Path) -> u32 {
             Err(_) => continue,
         };
 
-        if entry
-            .path()
-            .extension()
-            .is_some_and(|extension| extension == "html")
-        {
+        if entry.file_type().is_file() && entry.file_name() != MANIFEST_FILE {
             count += 1;
         }
     }

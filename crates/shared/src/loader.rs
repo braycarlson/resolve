@@ -7,6 +7,7 @@ use crate::discovery::TemplateIndex;
 use compiler::error::CompileError;
 use compiler::resolver::TemplateLoader;
 
+pub const MANIFEST_FILE: &str = ".resolve_manifest";
 const VENDOR_ENTRIES_MAX: u32 = 100_000;
 const VENDOR_WALK_ITERATIONS_MAX: u32 = 500_000;
 
@@ -54,11 +55,7 @@ impl VendorIndex {
                 continue;
             }
 
-            if entry
-                .path()
-                .extension()
-                .is_none_or(|extension| extension != "html")
-            {
+            if entry.file_name() == MANIFEST_FILE {
                 continue;
             }
 

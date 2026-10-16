@@ -33,8 +33,9 @@ without walking the inheritance chain again.
 - **Atomic output**: A compile writes to a staging directory and swaps it into place. The
   previous output stays beside it, and a swap interrupted partway is recovered from a
   journal on the next run.
-- **Entry discovery**: The compiler finds the templates nothing extends and compiles
-  those. Every other template is copied through unchanged.
+- **Entry discovery**: The compiler finds the HTML templates nothing extends or includes
+  and compiles those. The rest are copied through unchanged, and a template of any
+  extension, such as an `.svg` partial, resolves by name the way Django loads it.
 - **Vendor templates**: The compiler can pull templates out of installed packages in a
   virtual environment, so a project's own overrides resolve against them.
 - **Validation**: A separate pass checks the tree without writing anything, with bounds on
