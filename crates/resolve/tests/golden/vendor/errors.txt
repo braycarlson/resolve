@@ -1,0 +1,2 @@
+index.html: ok
+package/widget.html: ok

@@ -1,0 +1,3 @@
+(Text content="<section>\n    ")
+(Include raw="{% include 'package/widget.html' with label='Overridden by the project' %}" path="package/widget.html" with_variables="label='Overridden by the project'" only=false is_literal=true)
+(Text content="\n</section>\n")

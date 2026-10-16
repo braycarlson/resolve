@@ -8,3 +8,4 @@ target/
 .venv/
 vendor/
 !/fixtures/**
+!/crates/resolve/tests/golden/**

@@ -1,0 +1,3 @@
+(Text content="<div class=\"widget overridden\">\n    <strong>")
+(Variable raw="{{ label }}" expression="label" filters="")
+(Text content="</strong>\n</div>\n")
