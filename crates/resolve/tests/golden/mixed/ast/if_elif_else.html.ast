@@ -1,0 +1,29 @@
+(Text content="\n")
+(If raw="{% if user.is_authenticated %}" condition="user.is_authenticated" elif_conditions="user.is_active")
+  :true_branch
+    (Text content="\n    Welcome, ")
+    (Variable raw="{{ user.username }}" expression="user.username" filters="")
+    (Text content="!\n    ")
+    (If raw="{% if user.is_staff %}" condition="user.is_staff" elif_conditions="user.is_superuser")
+      :true_branch
+        (Text content="\n        ")
+        (Include raw="{% include 'admin/admin_panel.html' %}" path="admin/admin_panel.html" with_variables="" only=false is_literal=true)
+        (Text content="\n    ")
+      :elif_branch
+        (Text content="\n        ")
+        (Include raw="{% include 'admin/superadmin_panel.html' %}" path="admin/superadmin_panel.html" with_variables="" only=false is_literal=true)
+        (Text content="\n    ")
+      :else_branch
+        (Text content="\n        ")
+        (Include raw="{% include 'user/user_panel.html' %}" path="user/user_panel.html" with_variables="" only=false is_literal=true)
+        (Text content="\n    ")
+    (Text content="\n")
+  :elif_branch
+    (Text content="\n    ")
+    (Include raw="{% include 'auth/login_prompt.html' %}" path="auth/login_prompt.html" with_variables="" only=false is_literal=true)
+    (Text content="\n")
+  :else_branch
+    (Text content="\n    ")
+    (Include raw="{% include 'auth/inactive_message.html' %}" path="auth/inactive_message.html" with_variables="" only=false is_literal=true)
+    (Text content="\n")
+(Text content="\n")

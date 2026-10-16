@@ -1,0 +1,5 @@
+comments.html: ok
+identical.html: ok
+loads.html: ok
+verbatim.html: ok
+whitespace.html: ok

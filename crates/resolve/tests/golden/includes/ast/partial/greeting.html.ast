@@ -1,0 +1,3 @@
+(Text content="<span>Hello, ")
+(Variable raw="{{ name }}" expression="name" filters="")
+(Text content="</span>\n")

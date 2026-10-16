@@ -1,0 +1,8 @@
+(Text content="<!doctype html>\n<html>\n<head><title>")
+(Block raw="{% block title %}" name="title" has_super_reference=false)
+  :content
+    (Text content="Base")
+(Text content="</title></head>\n<body>")
+(Block raw="{% block base_body_content %}" name="base_body_content" has_super_reference=false)
+  :content
+(Text content="</body>\n</html>\n")

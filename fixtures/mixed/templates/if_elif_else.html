@@ -1,0 +1,15 @@
+
+{% if user.is_authenticated %}
+    Welcome, {{ user.username }}!
+    {% if user.is_staff %}
+        {% include 'admin/admin_panel.html' %}
+    {% elif user.is_superuser %}
+        {% include 'admin/superadmin_panel.html' %}
+    {% else %}
+        {% include 'user/user_panel.html' %}
+    {% endif %}
+{% elif user.is_active %}
+    {% include 'auth/login_prompt.html' %}
+{% else %}
+    {% include 'auth/inactive_message.html' %}
+{% endif %}

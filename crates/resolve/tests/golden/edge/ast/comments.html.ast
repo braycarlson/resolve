@@ -1,0 +1,4 @@
+(Text content="{#  a one line comment  #}")
+(Text content="\n<p>Before</p>\n")
+(CommentBlock raw="{% comment %}" content="\n    A block comment that spans\n    more than one line.\n")
+(Text content="\n<p>After</p>\n")

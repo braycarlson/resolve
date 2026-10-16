@@ -1,0 +1,19 @@
+{% if user.is_authenticated %}
+    Welcome, {{ user.username }}!
+    {% if user.is_staff %}
+        <div class="admin-panel">admin panel</div>
+
+    {% elif user.is_superuser %}
+        <div class="superadmin-panel">superadmin panel</div>
+
+    {% else %}
+        <div class="user-panel">user panel</div>
+
+    {% endif %}
+{% elif user.is_active %}
+    <div class="login-prompt">login prompt</div>
+
+{% else %}
+    <div class="inactive-message">inactive message</div>
+
+{% endif %}

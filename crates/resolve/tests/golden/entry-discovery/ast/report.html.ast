@@ -1,0 +1,6 @@
+(Extends raw="{% extends 'layout.html' %}" parent_path="layout.html" is_literal=true)
+(Text content="\n")
+(Block raw="{% block body %}" name="body" has_super_reference=false)
+  :content
+    (Text content="<h1>Report</h1>")
+(Text content="\n")

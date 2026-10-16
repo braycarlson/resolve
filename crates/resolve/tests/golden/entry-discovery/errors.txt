@@ -1,0 +1,5 @@
+dashboard.html: ok
+layout.html: ok
+partial/fragment.html: ok
+report.html: ok
+standalone.html: ok

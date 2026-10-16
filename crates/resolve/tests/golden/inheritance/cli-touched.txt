@@ -1,0 +1,27 @@
+# exit 0
+--- stdout ---
+resolve v<version>
+
+Config (resolve.toml)
+  1 template directory
+  venv: none
+  output: output
+  cache: cache (incremental)
+  vendor: vendor (disabled)
+
+Vendor
+  0 templates synced
+
+Scan
+  3 templates found
+  1 entry, 2 non-compiled
+
+Compile (1 templates)
+  page.html
+
+Copy (2 templates)
+  base.html
+  section.html
+
+Done in <duration>s (1 compiled, 0 failed, 2 copied)
+--- stderr ---

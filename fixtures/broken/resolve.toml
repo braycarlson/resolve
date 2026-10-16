@@ -1,0 +1,24 @@
+[compiler]
+output_directory = "output"
+cache_directory = "cache"
+
+[paths]
+primary_templates = ["templates"]
+
+[vendor]
+auto_detect = false
+vendor_directory = "vendor"
+
+[entry_templates]
+auto_discover = true
+
+[validation]
+strict = false
+warn_undefined_vars = false
+max_include_depth = 3
+max_inheritance_depth = 2
+skip_url_validation = true
+
+[incremental]
+enabled = false
+track_file_hashes = false

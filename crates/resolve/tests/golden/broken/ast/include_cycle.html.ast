@@ -1,0 +1,3 @@
+(Text content="<div>")
+(Include raw="{% include 'include_cycle_partner.html' %}" path="include_cycle_partner.html" with_variables="" only=false is_literal=true)
+(Text content="</div>\n")

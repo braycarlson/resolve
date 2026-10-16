@@ -1,0 +1,23 @@
+<section>
+    <span>plain partial</span>
+
+    {% with name=customer.name %}<span>Hello, {{ name }}</span>
+{% endwith %}
+    {% include 'partial/greeting.html' with name='Anonymous' only %}
+
+    <table>
+        {% for item in items %}
+            {% with item=item %}<tr>
+    <td>{{ item.name }}</td>
+    <td>{{ item.quantity }}</td>
+</tr>
+{% endwith %}
+        {% endfor %}
+    </table>
+
+    <div class="outer">
+    <em>innermost</em>
+
+</div>
+
+</section>

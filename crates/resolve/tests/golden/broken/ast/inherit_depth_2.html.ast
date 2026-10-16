@@ -1,0 +1,6 @@
+(Extends raw="{% extends 'inherit_depth_1.html' %}" parent_path="inherit_depth_1.html" is_literal=true)
+(Text content="\n")
+(Block raw="{% block body %}" name="body" has_super_reference=false)
+  :content
+    (Text content="<p>two</p>")
+(Text content="\n")

@@ -1,0 +1,43 @@
+(Text content="\n")
+(Extends raw="{% extends 'base.html' %}" parent_path="base.html" is_literal=true)
+(Text content="\n")
+(Load raw="{% load static %}" libraries="static")
+(Text content="\n\n")
+(Block raw="{% block title %}" name="title" has_super_reference=false)
+  :content
+    (Variable raw="{{ page_title }}" expression="page_title" filters="")
+(Text content="\n\n")
+(Block raw="{% block base_body_content %}" name="base_body_content" has_super_reference=false)
+  :content
+    (Text content="\n<div class='container'>\n    ")
+    (For raw="{% for section in sections %}" variable="section" iterable="sections")
+      :body
+        (Text content="\n        <section id='")
+        (Variable raw="{{ section.id }}" expression="section.id" filters="")
+        (Text content="'>\n            <h2>")
+        (Variable raw="{{ section.title }}" expression="section.title" filters="")
+        (Text content="</h2>\n            ")
+        (If raw="{% if section.items %}" condition="section.items" elif_conditions="")
+          :true_branch
+            (Text content="\n                ")
+            (For raw="{% for item in section.items %}" variable="item" iterable="section.items")
+              :body
+                (Text content="\n                    ")
+                (If raw="{% if item.active %}" condition="item.active" elif_conditions="")
+                  :true_branch
+                    (Text content="\n                        ")
+                    (Include raw="{% include 'item/active_item.html' with item=item %}" path="item/active_item.html" with_variables="item=item" only=false is_literal=true)
+                    (Text content="\n                    ")
+                  :else_branch
+                    (Text content="\n                        ")
+                    (Include raw="{% include 'item/inactive_item.html' with item=item %}" path="item/inactive_item.html" with_variables="item=item" only=false is_literal=true)
+                    (Text content="\n                    ")
+                (Text content="\n                ")
+            (Text content="\n            ")
+          :else_branch
+            (Text content="\n                ")
+            (Include raw="{% include 'django_spire/item/no_data_item.html' %}" path="django_spire/item/no_data_item.html" with_variables="" only=false is_literal=true)
+            (Text content="\n            ")
+        (Text content="\n        </section>\n    ")
+    (Text content="\n</div>\n")
+(Text content="\n")

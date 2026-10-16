@@ -1,0 +1,17 @@
+(Text content="<!doctype html>\n<html>\n<head>\n    <title>")
+(Block raw="{% block title %}" name="title" has_super_reference=false)
+  :content
+    (Text content="Base title")
+(Text content="</title>\n</head>\n<body>\n")
+(Block raw="{% block header %}" name="header" has_super_reference=false)
+  :content
+    (Text content="<header>Site header</header>")
+(Text content="\n")
+(Block raw="{% block content %}" name="content" has_super_reference=false)
+  :content
+    (Text content="<p>Base content</p>")
+(Text content="\n")
+(Block raw="{% block footer %}" name="footer" has_super_reference=false)
+  :content
+    (Text content="<footer>Untouched all the way down</footer>")
+(Text content="\n</body>\n</html>\n")

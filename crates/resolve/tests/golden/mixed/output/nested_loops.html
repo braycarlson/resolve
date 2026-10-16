@@ -1,0 +1,19 @@
+{% for section in sections %}
+    <section>
+        <h2>{{ section.title }}</h2>
+        {% for item in section.items %}
+            {% if item.visible %}
+                {% if item.priority > 5 %}
+                    {% with item=item %}<div class="high-priority">high priority</div>
+{% endwith %}
+                {% elif item.priority > 3 %}
+                    {% with item=item %}<div class="medium-priority">medium priority</div>
+{% endwith %}
+                {% else %}
+                    {% with item=item %}<div class="low-priority">low priority</div>
+{% endwith %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </section>
+{% endfor %}

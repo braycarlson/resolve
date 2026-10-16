@@ -1,0 +1,8 @@
+(If raw="{%   if     user.is_authenticated   %}" condition="user.is_authenticated" elif_conditions="")
+  :true_branch
+    (Text content="\n    ")
+    (Variable raw="{{    user.username    |    upper    }}" expression="user.username    |    upper" filters="upper")
+    (Text content="\n")
+(Text content="\n<p>")
+(Variable raw="{{value|default:\"none\"|upper}}" expression="value|default:\"none\"|upper" filters="default:\"none\",upper")
+(Text content="</p>\n")

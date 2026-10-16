@@ -1,0 +1,12 @@
+(Extends raw="{% extends 'base.html' %}" parent_path="base.html" is_literal=true)
+(Text content="\n\n")
+(Block raw="{% block title %}" name="title" has_super_reference=false)
+  :content
+    (Text content="Section title")
+(Text content="\n\n")
+(Block raw="{% block content %}" name="content" has_super_reference=true)
+  :content
+    (Text content="\n    ")
+    (Variable raw="{{ block.super }}" expression="block.super" filters="")
+    (Text content="\n    <p>Section content</p>\n")
+(Text content="\n")

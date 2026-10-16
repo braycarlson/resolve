@@ -1,0 +1,4 @@
+{%   if     user.is_authenticated   %}
+    {{    user.username    |    upper    }}
+{% endif %}
+<p>{{value|default:"none"|upper}}</p>

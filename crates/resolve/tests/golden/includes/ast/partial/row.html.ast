@@ -1,0 +1,5 @@
+(Text content="<tr>\n    <td>")
+(Variable raw="{{ item.name }}" expression="item.name" filters="")
+(Text content="</td>\n    <td>")
+(Variable raw="{{ item.quantity }}" expression="item.quantity" filters="")
+(Text content="</td>\n</tr>\n")

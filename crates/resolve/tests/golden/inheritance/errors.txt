@@ -1,0 +1,3 @@
+base.html: ok
+page.html: ok
+section.html: ok

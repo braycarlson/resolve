@@ -1,0 +1,26 @@
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block base_body_content %}
+<div class='container'>
+    {% for section in sections %}
+        <section id='{{ section.id }}'>
+            <h2>{{ section.title }}</h2>
+            {% if section.items %}
+                {% for item in section.items %}
+                    {% if item.active %}
+                        {% include 'item/active_item.html' with item=item %}
+                    {% else %}
+                        {% include 'item/inactive_item.html' with item=item %}
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                {% include 'django_spire/item/no_data_item.html' %}
+            {% endif %}
+        </section>
+    {% endfor %}
+</div>
+{% endblock %}

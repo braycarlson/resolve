@@ -1,0 +1,11 @@
+(Text content="\n")
+(For raw="{% for key, value in dict.items %}" variable="key, value" iterable="dict.items")
+  :body
+    (Text content="\n    <div class='item'>\n        <span class='key'>")
+    (Variable raw="{{ key }}" expression="key" filters="")
+    (Text content="</span>\n        <span class='value'>")
+    (Variable raw="{{ value }}" expression="value" filters="")
+    (Text content="</span>\n    </div>\n")
+  :empty_branch
+    (Text content="\n    <p>No items</p>\n")
+(Text content="\n")

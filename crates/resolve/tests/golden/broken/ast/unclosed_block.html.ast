@@ -1,0 +1,3 @@
+(Block raw="{% block body %}" name="body" has_super_reference=false)
+  :content
+    (Text content="\n<p>No endblock follows.</p>\n")

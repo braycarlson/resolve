@@ -1,0 +1,5 @@
+(Text content="<h1>")
+(Variable raw="{{ title }}" expression="title" filters="")
+(Text content="</h1>\n<p>")
+(Variable raw="{{ body }}" expression="body" filters="")
+(Text content="</p>\n")

@@ -1,0 +1,6 @@
+(Extends raw="{% extends 'circular_extends_a.html' %}" parent_path="circular_extends_a.html" is_literal=true)
+(Text content="\n")
+(Block raw="{% block body %}" name="body" has_super_reference=false)
+  :content
+    (Text content="<p>b</p>")
+(Text content="\n")

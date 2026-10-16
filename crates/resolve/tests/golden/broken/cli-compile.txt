@@ -1,0 +1,59 @@
+# exit 0
+--- stdout ---
+resolve v<version>
+
+Config (resolve.toml)
+  1 template directory
+  venv: none
+  output: output
+  cache: cache (disabled)
+  vendor: vendor (disabled)
+
+Vendor
+  0 templates synced
+
+Scan
+  19 templates found
+  8 entry, 11 non-compiled
+
+Compile (8 templates)
+  include_depth_1.html
+  inherit_depth_3.html
+  mismatched_end_tag.html
+  WARN:     WARN Unclosed if tag (opened at token 1)
+  missing_extends_target.html
+  unclosed_block.html
+  WARN:     WARN Unclosed block 'body' (opened at token 1)
+  unterminated_comment.html
+  unterminated_tag.html
+  unterminated_variable.html
+
+Copy (15 templates)
+  circular_extends_a.html
+  circular_extends_b.html
+  include_cycle.html
+  include_cycle_partner.html
+  include_depth_2.html
+  include_depth_3.html
+  include_depth_4.html
+  include_depth_5.html
+  inherit_depth_1.html
+  inherit_depth_2.html
+  inherit_depth_base.html
+  missing_extends_target.html
+  unterminated_comment.html
+  unterminated_tag.html
+  unterminated_variable.html
+
+4 templates failed:
+  missing_extends_target.html: Parent template not found: nowhere/absent.html
+  unterminated_comment.html: Parse error: Unterminated comment at position 3
+  unterminated_tag.html: Parse error: Unterminated block tag at position 3
+  unterminated_variable.html: Parse error: Unterminated variable at position 3
+
+Done in <duration>s (4 compiled, 4 failed, 15 copied)
+--- stderr ---
+    ERROR Parent template not found: nowhere/absent.html
+    ERROR Parse error: Unterminated comment at position 3
+    ERROR Parse error: Unterminated block tag at position 3
+    ERROR Parse error: Unterminated variable at position 3

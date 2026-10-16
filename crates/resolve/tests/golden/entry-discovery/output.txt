@@ -1,0 +1,5 @@
+dashboard.html
+layout.html
+partial/fragment.html
+report.html
+standalone.html

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head><title>{% load static %}{{ page_title }}</title></head>
+<body>
+<div class='container'>
+    {% for section in sections %}
+        <section id='{{ section.id }}'>
+            <h2>{{ section.title }}</h2>
+            {% if section.items %}
+                {% for item in section.items %}
+                    {% if item.active %}
+                        {% with item=item %}<div class="active-item">active item</div>
+{% endwith %}
+                    {% else %}
+                        {% with item=item %}<div class="inactive-item">inactive item</div>
+{% endwith %}
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="no-data-item">no data item</div>
+
+            {% endif %}
+        </section>
+    {% endfor %}
+</div>
+</body>
+</html>

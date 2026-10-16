@@ -1,0 +1,19 @@
+circular_extends_a.html: inheritance: Circular inheritance detected: circular_extends_a.html
+circular_extends_b.html: inheritance: Circular inheritance detected: circular_extends_b.html
+include_cycle.html: ok
+include_cycle_partner.html: ok
+include_depth_1.html: ok
+include_depth_2.html: ok
+include_depth_3.html: ok
+include_depth_4.html: ok
+include_depth_5.html: ok
+inherit_depth_1.html: ok
+inherit_depth_2.html: ok
+inherit_depth_3.html: ok
+inherit_depth_base.html: ok
+mismatched_end_tag.html: ok
+missing_extends_target.html: inheritance: Parent template not found: nowhere/absent.html
+unclosed_block.html: ok
+unterminated_comment.html: parse: Parse error: Unterminated comment at position 3
+unterminated_tag.html: parse: Parse error: Unterminated block tag at position 3
+unterminated_variable.html: parse: Parse error: Unterminated variable at position 3

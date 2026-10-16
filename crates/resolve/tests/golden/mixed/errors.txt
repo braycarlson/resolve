@@ -1,0 +1,16 @@
+admin/admin_panel.html: ok
+admin/superadmin_panel.html: ok
+auth/inactive_message.html: ok
+auth/login_prompt.html: ok
+base.html: ok
+deep_inheritance.html: ok
+django_spire/item/no_data_item.html: ok
+if_elif_else.html: ok
+item/active_item.html: ok
+item/high_priority.html: ok
+item/inactive_item.html: ok
+item/low_priority.html: ok
+item/medium_priority.html: ok
+nested_loops.html: ok
+tuple_unpacking.html: ok
+user/user_panel.html: ok

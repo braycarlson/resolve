@@ -1,0 +1,13 @@
+<section>
+    {% include 'partial/plain.html' %}
+    {% include 'partial/greeting.html' with name=customer.name %}
+    {% include 'partial/greeting.html' with name='Anonymous' only %}
+
+    <table>
+        {% for item in items %}
+            {% include 'partial/row.html' with item=item %}
+        {% endfor %}
+    </table>
+
+    {% include 'partial/outer.html' %}
+</section>

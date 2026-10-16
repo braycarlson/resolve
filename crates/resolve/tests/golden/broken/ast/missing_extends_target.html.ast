@@ -1,0 +1,6 @@
+(Extends raw="{% extends 'nowhere/absent.html' %}" parent_path="nowhere/absent.html" is_literal=true)
+(Text content="\n")
+(Block raw="{% block body %}" name="body" has_super_reference=false)
+  :content
+    (Text content="<p>The parent does not exist.</p>")
+(Text content="\n")

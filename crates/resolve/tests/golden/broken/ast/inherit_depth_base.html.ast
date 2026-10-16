@@ -1,0 +1,4 @@
+(Text content="<html><body>")
+(Block raw="{% block body %}" name="body" has_super_reference=false)
+  :content
+(Text content="</body></html>\n")

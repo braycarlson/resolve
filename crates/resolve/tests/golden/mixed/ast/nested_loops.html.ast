@@ -1,0 +1,29 @@
+(Text content="\n")
+(For raw="{% for section in sections %}" variable="section" iterable="sections")
+  :body
+    (Text content="\n    <section>\n        <h2>")
+    (Variable raw="{{ section.title }}" expression="section.title" filters="")
+    (Text content="</h2>\n        ")
+    (For raw="{% for item in section.items %}" variable="item" iterable="section.items")
+      :body
+        (Text content="\n            ")
+        (If raw="{% if item.visible %}" condition="item.visible" elif_conditions="")
+          :true_branch
+            (Text content="\n                ")
+            (If raw="{% if item.priority > 5 %}" condition="item.priority > 5" elif_conditions="item.priority > 3")
+              :true_branch
+                (Text content="\n                    ")
+                (Include raw="{% include 'item/high_priority.html' with item=item %}" path="item/high_priority.html" with_variables="item=item" only=false is_literal=true)
+                (Text content="\n                ")
+              :elif_branch
+                (Text content="\n                    ")
+                (Include raw="{% include 'item/medium_priority.html' with item=item %}" path="item/medium_priority.html" with_variables="item=item" only=false is_literal=true)
+                (Text content="\n                ")
+              :else_branch
+                (Text content="\n                    ")
+                (Include raw="{% include 'item/low_priority.html' with item=item %}" path="item/low_priority.html" with_variables="item=item" only=false is_literal=true)
+                (Text content="\n                ")
+            (Text content="\n            ")
+        (Text content="\n        ")
+    (Text content="\n    </section>\n")
+(Text content="\n")

@@ -1,0 +1,8 @@
+{% for key, value in dict.items %}
+    <div class='item'>
+        <span class='key'>{{ key }}</span>
+        <span class='value'>{{ value }}</span>
+    </div>
+{% empty %}
+    <p>No items</p>
+{% endfor %}

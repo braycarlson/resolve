@@ -1,0 +1,6 @@
+index.html: ok
+partial/greeting.html: ok
+partial/inner.html: ok
+partial/outer.html: ok
+partial/plain.html: ok
+partial/row.html: ok
